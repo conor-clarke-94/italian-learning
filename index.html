@@ -616,7 +616,7 @@ const DEFAULT_SETTINGS = {
   newPerDay: 15, newFrom: "all", dir: "en-it", autoplay: true, rate: 0.95,
   engine: "browser", voiceName: "", model: "claude-sonnet-5-5",
   lSet: "all", lRepeats: 3, lEcho: 1, lShow: "both", lShuffle: false, lLoop: true,
-  sSet: "learning", sHide: false
+  sSet: "learning", sHide: false, guided: true, lessonNew: 12
 };
 let S = { v: 1, ts: 0, cards: {}, stars: {}, custom: [], topics: [], explain: {}, settings: { ...DEFAULT_SETTINGS }, days: {}, newLog: {}, speak: {} };
 
@@ -804,7 +804,7 @@ function queue(){
     if (c.s === "review"){ if (c.due <= eod) rev.push(p); }
     else learn.push(p);
   }
-  const newLeft = Math.max(0, S.settings.newPerDay - (S.newLog[today()] || 0));
+  const newLeft = S.settings.guided ? 0 : Math.max(0, S.settings.newPerDay - (S.newLog[today()] || 0));
   const nf = S.settings.newFrom;
   const freshF = nf === "all" ? fresh : fresh.filter(p => p.sec === nf);
   rev.sort((a, b) => S.cards[a.id].due - S.cards[b.id].due);
@@ -847,13 +847,14 @@ function setPhrases(key){
 }
 
 /* ---------- routing ---------- */
-const VIEWS = ["oggi","ripasso","ascolto","parla","frasi","crea"];
+const VIEWS = ["oggi","ripasso","ascolto","parla","frasi","crea","lezione"];
 let view = "oggi";
 function route(){
   const h = (location.hash || "").replace("#", "");
   view = VIEWS.includes(h) ? h : "oggi";
-  $$("#nav a").forEach(a => a.classList.toggle("on", a.dataset.v === view));
+  $$("#nav a").forEach(a => a.classList.toggle("on", a.dataset.v === (view === "lezione" ? "oggi" : view)));
   if (view !== "ripasso") dictH = null;
+  if (view !== "lezione"){ stopLs(); C.inLesson = false; }
   render();
   window.scrollTo(0, 0);
 }
@@ -866,6 +867,7 @@ function render(){
   else if (view === "ascolto") renderListen(v);
   else if (view === "parla") renderSpeak(v);
   else if (view === "crea") renderCreate(v);
+  else if (view === "lezione") renderLesson(v);
   else renderLibrary(v);
 }
 
@@ -877,6 +879,7 @@ function renderHome(v){
   for (const p of u){ const c = S.cards[p.id]; if (c && c.s === "review"){ learned++; if (c.ivl >= 21) mastered++; } }
   const st = streak(), doneToday = S.days[today()] || 0;
   const s = S.settings;
+  const cc = s.guided ? courseCard() : null;
   const secRows = sectionsAll().map(sec => {
     const ps = u.filter(p => p.sec === sec); if (!ps.length) return "";
     const k = ps.filter(p => S.cards[p.id] && S.cards[p.id].s === "review").length;
@@ -892,14 +895,19 @@ function renderHome(v){
     <div class="stat"><b>${mastered}</b><span>Mastered (21d+)</span></div>
     <div class="stat"><b>${st}🔥</b><span>Day streak</span></div>
   </div>
-  <div class="card" style="margin-top:16px">
-    <h3 style="margin-top:0">Today's 15 minutes</h3>
-    <ol class="plan" style="padding-left:20px;margin:0 0 14px">
-      <li><b>Ripasso</b> (about 8 min): see the English, <b>say the Italian out loud</b>, then reveal and rate yourself honestly.</li>
-      <li><b>Ascolto</b> (about 4 min): play "Introduced today" or "In progress" and <b>repeat each phrase in the pause</b>.</li>
-      <li><b>Parla</b> (about 3 min): check a few phrases with the mic, or have a short chat with Silvia.</li>
-      <li>Then use 2 or 3 of today's phrases with the real Silvia. 😉</li>
-    </ol>
+  ${S.settings.guided ? `<div class="card" style="margin-top:16px">${cc.main}</div>
+  <h3>Extra practice (any time)</h3>
+  <div class="row">
+    <button class="btn" data-go="ripasso">🧠 Reviews${due ? " (" + due + ")" : ""}</button>
+    <button class="btn" data-go="ascolto">🎧 Listen on repeat</button>
+    <button class="btn" data-go="parla">🎙️ Speak</button>
+  </div>
+  <h3>Your course</h3>
+  <div class="card" style="padding:6px 16px">${cc.map}</div>
+  <p class="small muted">One section at a time: about ${S.settings.lessonNew} new phrases a day, then a unit test day before moving on.</p>`
+  : `<div class="card" style="margin-top:16px">
+    <h3 style="margin-top:0">Free study</h3>
+    <p class="small muted" style="margin-top:0">The guided course is off. Turn it on in Settings to get a planned 30-minute lesson every day.</p>
     <div class="row">
       <button class="btn primary big" data-go="ripasso">${due + q.fresh.length ? "Start review (" + (due + q.fresh.length) + ")" : "Review"}</button>
       <button class="btn big" data-go="ascolto">🎧 Listen</button>
@@ -907,19 +915,23 @@ function renderHome(v){
     </div>
   </div>
   <h3>Progress by section</h3>
-  <div class="card" style="padding:6px 16px">${secRows}</div>
+  <div class="card" style="padding:6px 16px">${secRows}</div>`}
   <h3>Settings</h3>
   <div class="card">
+    <label class="chk" style="margin-bottom:12px"><input type="checkbox" id="setGuided" ${s.guided?"checked":""}> <span><b>Guided course</b>: a planned daily lesson, one section at a time (recommended)</span></label>
     <div class="controls">
-      <label class="f">New phrases per day
+      <label class="f">New phrases per lesson
+        <select id="setLessonNew">${[8,10,12,15].map(n => `<option ${s.lessonNew===n?"selected":""}>${n}</option>`).join("")}</select></label>
+      ${s.guided ? "" : `<label class="f">New per day
         <select id="setNew">${[5,10,15,20,25,30,40].map(n => `<option ${s.newPerDay===n?"selected":""}>${n}</option>`).join("")}</select></label>
       <label class="f">Take new phrases from
-        <select id="setFrom"><option value="all">All sections, in order</option>${sectionsAll().map(x => `<option value="${esc(x)}" ${s.newFrom===x?"selected":""}>${esc(x)}</option>`).join("")}</select></label>
+        <select id="setFrom"><option value="all">All sections, in order</option>${sectionsAll().map(x => `<option value="${esc(x)}" ${s.newFrom===x?"selected":""}>${esc(x)}</option>`).join("")}</select></label>`}
       <label class="f">Review direction
         <select id="setDir">
           <option value="en-it" ${s.dir==="en-it"?"selected":""}>English → Italian (speaking)</option>
-          <option value="it-en" ${s.dir==="it-en"?"selected":""}>Italian audio → meaning (listening)</option>
-          <option value="mix" ${s.dir==="mix"?"selected":""}>Mix of both</option>
+          <option value="it-en" ${s.dir==="it-en"?"selected":""}>Italian → English (reading)</option>
+          <option value="it-en-audio" ${s.dir==="it-en-audio"?"selected":""}>Italian audio → English (listening)</option>
+          <option value="mix" ${s.dir==="mix"?"selected":""}>Mix of both directions</option>
         </select></label>
       <label class="f">Italian voice
         <select id="setEng">${itVoices.length ? itVoices.map(vc => `<option value="${esc(vc.name)}" ${itVoice && itVoice.name===vc.name?"selected":""}>${esc(vc.name)}</option>`).join("") : `<option>Device default</option>`}</select></label>
@@ -954,8 +966,11 @@ function renderHome(v){
     </details>
   </div>`;
   $$("[data-go]", v).forEach(b => b.onclick = () => go(b.dataset.go));
-  $("#setNew").onchange = e => { S.settings.newPerDay = +e.target.value; save(); render(); };
-  $("#setFrom").onchange = e => { S.settings.newFrom = e.target.value; save(); render(); };
+  wireCourseCard(v);
+  $("#setGuided").onchange = e => { S.settings.guided = e.target.checked; save(); render(); };
+  $("#setLessonNew").onchange = e => { S.settings.lessonNew = +e.target.value; save(); render(); };
+  if ($("#setNew")) $("#setNew").onchange = e => { S.settings.newPerDay = +e.target.value; save(); render(); };
+  if ($("#setFrom")) $("#setFrom").onchange = e => { S.settings.newFrom = e.target.value; save(); render(); };
   $("#setDir").onchange = e => { S.settings.dir = e.target.value; save(); };
   $("#setEng").onchange = e => { S.settings.voiceName = e.target.value; pickVoice(); save(); say("Ciao! Sono la tua nuova voce."); };
   $("#setRate").oninput = e => { S.settings.rate = +e.target.value; $("#rateVal").textContent = S.settings.rate.toFixed(2) + "×"; };
@@ -982,7 +997,7 @@ function newRound(){
   const nx = pickNext();
   if (!nx || nx.wait){ R = { empty: true, wait: nx && nx.wait, ahead: nx && nx.ahead }; return; }
   let dir = S.settings.dir;
-  if (dir === "mix") dir = Math.random() < 0.65 ? "en-it" : "it-en";
+  if (dir === "mix") dir = Math.random() < 0.6 ? "en-it" : "it-en";
   R = { p: nx, dir, revealed: false, attempt: "", partial: "", result: null };
   lastShown = nx.id;
 }
@@ -995,32 +1010,40 @@ function renderRecall(v){
     const waitTxt = R.wait ? `The next learning phrase comes back in ${fmtIvl(Math.max(0, R.wait - Date.now()))}.` : "";
     v.innerHTML = `<div class="card done" style="margin-top:20px">
       <div class="big">🎉</div><h2 style="margin-top:6px">Fatto per adesso!</h2>
-      <p class="sub">${waitTxt || "You're all caught up for today."}${!R.wait && q.allFresh ? " Come back tomorrow for more new phrases, or take extra now." : ""}</p>
+      <p class="sub">${waitTxt || "You're all caught up for today."}${!R.wait && q.allFresh ? (S.settings.guided ? " New phrases come through your daily lesson on the Oggi tab." : " Come back tomorrow for more new phrases, or take extra now.") : ""}</p>
       <div class="row" style="justify-content:center">
         ${R.wait ? `<button class="btn primary" id="aheadBtn">Review it now</button>` : ""}
-        ${q.allFresh ? `<button class="btn" id="moreBtn">+5 new phrases</button>` : ""}
+        ${q.allFresh && !S.settings.guided ? `<button class="btn" id="moreBtn">+5 new phrases</button>` : ""}
         <button class="btn" data-go="ascolto">🎧 Listen instead</button>
       </div></div>`;
     $$("[data-go]", v).forEach(b => b.onclick = () => go(b.dataset.go));
-    if ($("#aheadBtn")) $("#aheadBtn").onclick = () => { const p = R.ahead; R = { p, dir: S.settings.dir === "it-en" ? "it-en" : "en-it", revealed: false, attempt: "", partial: "", result: null }; lastShown = p.id; render(); };
+    if ($("#aheadBtn")) $("#aheadBtn").onclick = () => { const p = R.ahead; R = { p, dir: S.settings.dir === "mix" ? "en-it" : S.settings.dir, revealed: false, attempt: "", partial: "", result: null }; lastShown = p.id; render(); };
     if ($("#moreBtn")) $("#moreBtn").onclick = () => { S.newLog[today()] = Math.max(0, (S.newLog[today()] || 0) - 5); save(); R = null; render(); };
     return;
   }
   const p = R.p, c = S.cards[p.id], stt = status(p.id), q = queue();
   const dueCount = q.learn.filter(x => S.cards[x.id].due <= Date.now()).length + q.rev.length + q.fresh.length;
-  const isEn = R.dir === "en-it";
+  const isEn = R.dir === "en-it", isAudio = R.dir === "it-en-audio";
   const now = Date.now();
   const prev = [1,2,3,4].map(r => fmtIvl(schedule(c, r, now).due - now));
   let sug = 0;
   if (R.result) sug = R.result.score >= 0.95 ? 3 : R.result.score >= 0.7 ? 2 : 1;
   const mic = micAvailable();
+  const dsel = S.settings.dir;
   v.innerHTML = `
-  <div class="row" style="margin-top:18px"><span class="tag ${stt.k}">${stt.label}</span><span class="small muted">${esc(p.sec)}${p.sub ? " · " + esc(p.sub) : ""}</span><span class="spacer"></span><span class="small muted">${dueCount} left</span></div>
+  <div class="seg" id="dirSeg" style="margin-top:16px;display:flex">
+    <button data-d="en-it" class="${dsel==="en-it"?"on":""}" style="flex:1">EN → IT</button>
+    <button data-d="it-en" class="${dsel==="it-en"||dsel==="it-en-audio"?"on":""}" style="flex:1">IT → EN</button>
+    <button data-d="mix" class="${dsel==="mix"?"on":""}" style="flex:1">Mix</button>
+  </div>
+  ${dsel==="it-en"||dsel==="it-en-audio" ? `<label class="chk small" style="margin-top:8px"><input type="checkbox" id="audOnly" ${dsel==="it-en-audio"?"checked":""}> Audio only (hide the Italian text)</label>` : ""}
+  <div class="row" style="margin-top:12px"><span class="tag ${stt.k}">${stt.label}</span><span class="small muted">${esc(p.sec)}${p.sub ? " · " + esc(p.sub) : ""}</span><span class="spacer"></span><span class="small muted">${dueCount} left</span></div>
   <div class="card" style="margin-top:10px">
     ${isEn ? `<div class="small muted">How do you say…</div><div class="prompt">${esc(p.en)}</div>`
-           : `<div class="small muted">Listen. What does it mean?</div><div class="row" style="margin:10px 0"><button class="btn primary" id="playQ">🔊 Play</button><button class="btn" id="playQs">🐢 Slow</button></div>`}
+           : isAudio ? `<div class="small muted">Listen. What does it mean?</div><div class="row" style="margin:10px 0"><button class="btn primary" id="playQ">🔊 Play</button><button class="btn" id="playQs">🐢 Slow</button></div>`
+           : `<div class="small muted">What does this mean in English?</div><div class="prompt">${esc(p.it)}</div><div class="row" style="margin:8px 0 0"><button class="btn sm" id="playQ">🔊 Play</button><button class="btn sm" id="playQs">🐢 Slow</button></div>`}
     ${!R.revealed ? `
-      <p class="small muted" style="margin:14px 0 8px">${isEn ? "Say it out loud first. Then type or speak it to check (optional)." : "Say the meaning in your head, then reveal."}</p>
+      <p class="small muted" style="margin:14px 0 8px">${isEn ? "Say it out loud first. Then type or speak it to check (optional)." : "Say the English meaning out loud, then reveal."}</p>
       ${isEn ? `<div class="row">
         <input type="text" id="att" placeholder="Type the Italian…" value="${esc(R.attempt || R.partial)}" style="flex:1;min-width:180px" autocomplete="off" autocapitalize="off" spellcheck="false">
         ${mic ? `<button class="btn icon ${dictState==="listening"?"rec":""}" id="micBtn" title="Speak your answer">🎙️</button>` : ""}
@@ -1029,8 +1052,8 @@ function renderRecall(v){
       <div class="kbd center" style="margin-top:8px">Space or Enter to reveal · 1–4 to rate</div>`
     : `
       <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
-      <div class="answer">${R.result ? R.result.html : esc(p.it)}</div>
-      ${!isEn ? `<div class="prompt" style="font-size:22px">${esc(p.en)}</div>` : ""}
+      ${isEn ? `<div class="answer">${R.result ? R.result.html : esc(p.it)}</div>`
+             : `<div class="answer">${esc(p.en)}</div>${isAudio ? `<div class="prompt" style="font-size:22px">${esc(p.it)}</div>` : ""}`}
       ${R.result ? `<div class="small" style="margin-top:4px"><span class="score">${Math.round(R.result.score*100)}% · ${verdict(R.result.score)}</span> <span class="muted">You said: “${esc(R.attempt)}”</span></div>` : ""}
       <div class="row" style="margin-top:10px">
         <button class="btn sm" id="playA">🔊 Play</button><button class="btn sm" id="playAs">🐢 Slow</button>
@@ -1047,7 +1070,9 @@ function renderRecall(v){
   </div>
   ${!R.revealed && isEn ? "" : ""}
   <p class="small muted center" style="margin-top:14px">Rate honestly: <b>Again</b> = couldn't say it · <b>Hard</b> = got it with effort · <b>Good</b> = got it · <b>Easy</b> = instant.</p>`;
-  if (!isEn){ $("#playQ").onclick = () => say(p.it); $("#playQs").onclick = () => say(p.it, 0.75); }
+  if (!isEn && $("#playQ")){ $("#playQ").onclick = () => say(p.it); $("#playQs").onclick = () => say(p.it, 0.75); }
+  $$("#dirSeg button", v).forEach(b => b.onclick = () => { const d = b.dataset.d; S.settings.dir = (d === "it-en" && S.settings.dir === "it-en-audio") ? "it-en-audio" : d; save(); stopSpeech(); if (R && !R.empty && !R.revealed){ R.dir = S.settings.dir === "mix" ? (Math.random() < 0.6 ? "en-it" : "it-en") : S.settings.dir; R.result = null; } render(); });
+  if ($("#audOnly")) $("#audOnly").onchange = e => { S.settings.dir = e.target.checked ? "it-en-audio" : "it-en"; save(); if (R && !R.revealed) R.dir = S.settings.dir; render(); };
   if (!R.revealed){
     const att = $("#att");
     if (att){ att.oninput = e => { R.attempt = e.target.value; R.partial = ""; };
@@ -1243,6 +1268,8 @@ function speakList(){
 }
 function renderSpeak(v){
   const mic = micAvailable();
+  C.inLesson = false;
+  if (C.scen === "lesson"){ C.scen = null; C.msgs = []; C.lessonKey = null; }
   v.innerHTML = `
   <h2>Parla</h2>
   <p class="sub">Speak out loud and get feedback.</p>
@@ -1360,7 +1387,7 @@ function renderChat(body, mic){
   body.innerHTML = `
     <div class="row"><b>${sc.t}</b><span class="spacer"></span>
       <label class="chk small"><input type="checkbox" id="chEn" ${C.showEn?"checked":""}> Show English</label>
-      <button class="btn sm" id="chNew">New chat</button></div>
+      ${C.inLesson ? "" : `<button class="btn sm" id="chNew">New chat</button>`}</div>
     <div class="chat">${C.msgs.map((m, i) => m.who === "ai"
       ? `<div class="msg"><div class="it">${esc(m.text)} <button class="btn ghost sm" data-say="${i}" title="Play">🔊</button></div>${C.showEn && m.en ? `<div class="tr">${esc(m.en)}</div>` : `<div class="tr"><a href="#parla" data-tr="${i}" class="small muted">translate</a></div>`}</div>`
       : `<div class="msg me"><div class="it">${esc(m.text)}</div>${m.fix ? `<div class="fix">✏️ <b>${esc(m.fix)}</b> <button class="btn ghost sm" data-sayfix="${i}">🔊</button>${m.tip ? `<div class="muted">${esc(m.tip)}</div>` : ""}</div>` : ""}</div>`).join("")}
@@ -1372,7 +1399,7 @@ function renderChat(body, mic){
       <button class="btn primary" id="chSend" ${C.busy?"disabled":""}>Send</button>
     </div>`;
   $("#chEn").onchange = e => { C.showEn = e.target.checked; render(); };
-  $("#chNew").onclick = () => { C.scen = null; C.msgs = []; render(); };
+  if ($("#chNew")) $("#chNew").onclick = () => { C.scen = null; C.msgs = []; render(); };
   $$("[data-say]", body).forEach(b => b.onclick = () => say(C.msgs[+b.dataset.say].text));
   $$("[data-sayfix]", body).forEach(b => b.onclick = () => say(C.msgs[+b.dataset.sayfix].fix));
   $$("[data-tr]", body).forEach(a => a.onclick = e => { e.preventDefault(); const m = C.msgs[+a.dataset.tr]; a.parentElement.textContent = m.en || "(no translation)"; });
@@ -1547,6 +1574,342 @@ function renderCreate(v){
     if (b.dataset.armed){ for (const p of t.phrases){ delete S.cards[p.id]; delete S.stars[p.id]; } S.topics = S.topics.filter(x => x !== t); save(); toast("Topic deleted"); render(); }
     else { b.dataset.armed = "1"; b.textContent = "Delete?"; b.classList.add("rec"); setTimeout(() => { if (b.isConnected){ delete b.dataset.armed; b.textContent = "✕"; b.classList.remove("rec"); } }, 3000); }
   });
+}
+
+/* ---------- GUIDED COURSE ---------- */
+const UNIT_ORDER = ["Chiacchiere (Small talk)","Come stai? (How are you?)","Colazione e caffè (Breakfast and coffee)","La cena (Dinner)","La mattina (The morning)","Ufficio o casa (Office or home)","La sera (The evening)","In cucina (In the kitchen)","Bruno","Il weekend (The weekend)","Il mio lavoro (My job)","Con i genitori di Silvia (With Silvia's parents)"];
+function courseState(){
+  if (!S.course || typeof S.course !== "object") S.course = {};
+  const c = S.course;
+  if (!c.day) c.day = 1;
+  if (!c.checked || typeof c.checked !== "object") c.checked = {};
+  if (!Array.isArray(c.history)) c.history = [];
+  if (c.session === undefined) c.session = null;
+  return c;
+}
+function units(){ const order = UNIT_ORDER.filter(u => SECTIONS.includes(u)); for (const s of sectionsAll()) if (!order.includes(s)) order.push(s); return order; }
+function unitPhrases(u){ const seen = new Set(); return allPhrases().filter(p => p.sec === u && !seen.has(p.id) && seen.add(p.id)); }
+function currentUnit(){
+  const c = courseState();
+  for (const u of units()){
+    const ps = unitPhrases(u); if (!ps.length) continue;
+    if (ps.some(p => !S.cards[p.id])) return { u, mode: "new", ps };
+    if (!c.checked[u]) return { u, mode: "check", ps };
+  }
+  return null;
+}
+function unitStatus(u){
+  const c = courseState(), ps = unitPhrases(u);
+  const intro = ps.filter(p => S.cards[p.id]).length;
+  const learned = ps.filter(p => S.cards[p.id] && S.cards[p.id].s === "review").length;
+  return { total: ps.length, intro, learned, done: !!c.checked[u] };
+}
+function roleFor(u){
+  if (/genitori/i.test(u)) return "Silvia's mum (her dad sometimes chips in). They are on a video call from Italy and speak to Conor with tu";
+  if (/Chiacchiere/i.test(u)) return "Luca, a friendly Italian guy Conor has just met";
+  return "Silvia, Conor's Italian wife";
+}
+function dueIds(exclude){
+  const eod = endOfToday(), ex = new Set(exclude || []);
+  return uniquePhrases().filter(p => { const k = S.cards[p.id]; return k && k.due <= eod && !ex.has(p.id); })
+    .sort((a, b) => S.cards[a.id].due - S.cards[b.id].due).slice(0, 60).map(p => p.id);
+}
+function pick(ids, n){ return shuffle(ids).slice(0, n); }
+function buildSession(kind){
+  const c = courseState(), cu = currentUnit();
+  let steps = [], newIds = [], unit = cu ? cu.u : null, mode = cu ? cu.mode : "free";
+  if (kind === "mini"){
+    steps = [{ k: "review", ids: dueIds() }];
+  } else if (!cu){
+    const all = uniquePhrases().filter(p => S.cards[p.id]).map(p => p.id);
+    steps = [{ k: "review", ids: dueIds() }, { k: "quiz", ids: pick(all, 25) }, { k: "listen", ids: pick(all, 15) }, { k: "speak", ids: pick(all, 15), need: 6 }, { k: "mission", ids: pick(all, 3) }];
+  } else if (cu.mode === "new"){
+    const fresh = cu.ps.filter(p => !S.cards[p.id]);
+    const N = S.settings.lessonNew || 12;
+    newIds = (fresh.length <= N + 3 ? fresh : fresh.slice(0, N)).map(p => p.id);
+    const recent = cu.ps.filter(p => S.cards[p.id]).slice(-8).map(p => p.id);
+    steps = [
+      { k: "review", ids: dueIds(newIds) },
+      { k: "learn", ids: newIds },
+      { k: "drill", ids: newIds },
+      { k: "listen", ids: newIds.concat(recent) },
+      { k: "reverse", ids: newIds },
+      { k: "speak", ids: newIds, need: 4 },
+      { k: "mission", ids: pick(newIds, 3) }
+    ];
+  } else {
+    const ids = cu.ps.map(p => p.id);
+    steps = [
+      { k: "review", ids: dueIds(ids) },
+      { k: "quiz", ids: shuffle(ids) },
+      { k: "listen", ids, reps: 1 },
+      { k: "speak", ids: pick(ids, 15), need: 6 },
+      { k: "mission", ids: pick(ids, 3) }
+    ];
+  }
+  steps = steps.filter(s => s.ids.length || s.k === "speak");
+  steps.forEach(s => { s.q = s.ids.slice(); });
+  return { date: today(), kind, day: c.day, unit, mode, steps, i: 0, started: Date.now(), newIds };
+}
+const STEP_NAMES = { review: "Warm-up review", learn: "Learn today's phrases", drill: "Practise them", listen: "Listen & repeat", reverse: "Understand them", quiz: "Unit test", speak: "Speak", mission: "Today's mission" };
+const STEP_HELP = {
+  review: "Phrases due today. See the English, say the Italian out loud, then rate yourself.",
+  learn: "Meet today's new phrases. Listen, then say each one out loud 3 times.",
+  drill: "Now recall them. Phrases you miss come back until you get them.",
+  listen: "Keep the screen on. Repeat each phrase out loud in the pause.",
+  reverse: "See the Italian. Say what it means in English.",
+  quiz: "Every phrase in this section, mixed up. Anything you miss goes back into your reviews.",
+  speak: "Use the phrases in a real conversation.",
+  mission: "Take them off the screen and into real life."
+};
+function estMins(st){ const n = st.ids.length; return Math.max(1, Math.round({ review: n * 0.2, learn: n * 0.6, drill: n * 0.5, listen: n * (st.reps === 1 ? 0.2 : 0.35), reverse: n * 0.2, quiz: n * 0.15, speak: 6, mission: 1 }[st.k] || 1)); }
+function sessionMins(ss){ return ss.steps.reduce((a, s) => a + estMins(s), 0); }
+function startLesson(kind){
+  const c = courseState();
+  if (kind === "full" && c.lastDone === today()){ toast("Today's lesson is done. The next one unlocks tomorrow."); return; }
+  if (c.session){
+    const ss = c.session;
+    if (ss.date !== today()){ ss.date = today(); const st = ss.steps[ss.i]; if (st && st.k === "review"){ st.ids = dueIds(ss.newIds); st.q = st.ids.slice(); } }
+  } else {
+    c.session = buildSession(kind);
+  }
+  c.justDone = null;
+  save(); go("lezione");
+}
+function stepDone(){
+  const ss = courseState().session; if (!ss) return;
+  stopLs();
+  toast("✓ " + STEP_NAMES[ss.steps[ss.i].k]);
+  ss.i++; save(); render(); window.scrollTo(0, 0);
+}
+function finishLesson(){
+  const c = courseState(), ss = c.session; if (!ss) return;
+  stopLs();
+  const mins = Math.max(1, Math.round((Date.now() - ss.started) / 60000));
+  if (ss.kind === "mini") c.lastMini = today();
+  else { c.lastDone = today(); if (ss.mode === "check" && ss.unit) c.checked[ss.unit] = true; c.day++; }
+  c.history.push({ date: today(), day: ss.day, unit: ss.unit, mode: ss.kind === "mini" ? "mini" : ss.mode, mins });
+  if (c.history.length > 300) c.history = c.history.slice(-300);
+  S.days[today()] = (S.days[today()] || 0) + 1;
+  c.justDone = { kind: ss.kind, mins, day: ss.day, unit: ss.unit, mode: ss.mode };
+  c.session = null; C.inLesson = false; C.lessonKey = null;
+  save(); go("oggi");
+}
+/* lesson listen player */
+const LS = { token: 0, playing: false };
+function stopLs(){ if (LS.playing){ LS.playing = false; LS.token++; stopSpeech(); } }
+function updateLs(st){
+  const el = $("#lsIt"); if (!el) return;
+  const p = byId(st.ids[Math.min(st.pos || 0, st.ids.length - 1)]);
+  el.textContent = p ? p.it : ""; $("#lsEn").textContent = p ? p.en : "";
+  $("#lsMeta").textContent = `Phrase ${Math.min((st.pos || 0) + 1, st.ids.length)} of ${st.ids.length}`;
+  $("#lsBar").style.width = Math.round(100 * (st.pos || 0) / st.ids.length) + "%";
+  const b = $("#lsPlayBtn"); if (b) b.textContent = LS.playing ? "⏸ Pause" : ((st.pos || 0) ? "▶ Continue" : "▶ Start");
+}
+async function lsPlay(st){
+  stopListen();
+  const tok = ++LS.token; LS.playing = true; updateLs(st);
+  while (LS.playing && tok === LS.token){
+    const p = byId(st.ids[st.pos || 0]);
+    if (p){
+      updateLs(st);
+      const t0 = performance.now();
+      try { await speak(p.it); } catch(e){ if (tok !== LS.token) return; if (e && e.code === "no_voice"){ toast("No Italian voice available on this device"); LS.playing = false; break; } }
+      if (tok !== LS.token) return;
+      await sleep(Math.max(600, performance.now() - t0) + 450);
+      if (tok !== LS.token) return;
+      st.rep = (st.rep || 0) + 1;
+    } else st.rep = st.reps || 2;
+    if (st.rep >= (st.reps || 2)){ st.rep = 0; st.pos = (st.pos || 0) + 1; save();
+      if (st.pos >= st.ids.length){ LS.playing = false; st.finished = true; save(); render(); return; } }
+  }
+  updateLs(st);
+}
+/* lesson view */
+let lsTimer = null;
+function renderLesson(v){
+  const c = courseState(), ss = c.session;
+  if (!ss){ v.innerHTML = ""; go("oggi"); return; }
+  const st = ss.steps[ss.i];
+  if (!st){ finishLesson(); return; }
+  const title = ss.kind === "mini" ? "Busy-day review" : ss.mode === "check" ? `Day ${ss.day} · Unit test` : ss.mode === "free" ? `Day ${ss.day} · Mixed practice` : `Day ${ss.day}`;
+  v.innerHTML = `
+  <div class="row" style="margin-top:16px"><b>${esc(title)}</b>${ss.unit ? `<span class="small muted">${esc(ss.unit)}</span>` : ""}<span class="spacer"></span><span class="small muted" id="lTimer"></span></div>
+  <div class="row" style="gap:4px;margin:10px 0 4px">${ss.steps.map((s, i) => `<div style="flex:1;height:6px;border-radius:99px;background:${i < ss.i ? "var(--olive)" : i === ss.i ? "var(--terra)" : "var(--line)"}"></div>`).join("")}</div>
+  <h2 style="margin-top:14px">${ss.i + 1}. ${STEP_NAMES[st.k]}</h2>
+  <p class="sub">${STEP_HELP[st.k]} <span class="muted">(about ${estMins(st)} min)</span></p>
+  <div id="lsBody"></div>
+  <p class="center small" style="margin-top:22px"><a href="#oggi" class="muted">Save and leave. You can pick up where you left off.</a></p>`;
+  clearInterval(lsTimer);
+  const tick = () => { const el = $("#lTimer"); if (!el){ clearInterval(lsTimer); return; } const s = Math.floor((Date.now() - ss.started) / 1000); el.textContent = "⏱ " + Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+  tick(); lsTimer = setInterval(tick, 1000);
+  const body = $("#lsBody");
+  if (st.k === "review") lsCard(body, st, "en-it", "srs");
+  else if (st.k === "drill") lsCard(body, st, "en-it", "srs");
+  else if (st.k === "reverse") lsCard(body, st, "it-en", "got");
+  else if (st.k === "quiz") lsCard(body, st, "mixed", "got");
+  else if (st.k === "learn") lsLearn(body, st);
+  else if (st.k === "listen") lsListen(body, st);
+  else if (st.k === "speak") lsSpeak(body, st, ss);
+  else if (st.k === "mission") lsMission(body, st, ss);
+}
+function lsCard(body, st, dirMode, rateMode){
+  if (!st.q.length){ stepDone(); return; }
+  const id = st.q[0], p = byId(id);
+  if (!p){ st.q.shift(); save(); render(); return; }
+  if (!st.dirs) st.dirs = {};
+  if (dirMode === "mixed" && !st.dirs[id]) st.dirs[id] = Math.random() < 0.5 ? "en-it" : "it-en";
+  const dir = dirMode === "mixed" ? st.dirs[id] : dirMode;
+  const rev = !!st.rev, c = S.cards[id], now = Date.now();
+  const front = dir === "en-it"
+    ? `<div class="small muted">How do you say…</div><div class="prompt">${esc(p.en)}</div>`
+    : `<div class="small muted">What does this mean?</div><div class="prompt">${esc(p.it)}</div><div class="row" style="margin-top:6px"><button class="btn sm" id="lsPlayQ">🔊 Play</button></div>`;
+  const back = dir === "en-it" ? `<div class="answer">${esc(p.it)}</div>` : `<div class="answer">${esc(p.en)}</div>`;
+  const buttons = rateMode === "srs"
+    ? `<div class="rate">${[["Again",1],["Hard",2],["Good",3],["Easy",4]].map(([l, r]) => `<button class="r${r}" data-r="${r}"><b>${l}</b><span>${fmtIvl(schedule(c, r, now).due - now)}</span></button>`).join("")}</div>`
+    : `<div class="row" style="margin-top:16px"><button class="btn big" id="lsMiss" style="flex:1">✗ Missed it</button><button class="btn primary big" id="lsGot" style="flex:1">✓ Got it</button></div>`;
+  body.innerHTML = `<div class="small muted center">${st.q.length} to go</div>
+  <div class="card" style="margin-top:8px">${front}
+  ${rev ? `<hr style="border:0;border-top:1px solid var(--line);margin:16px 0">${back}
+     <div class="row" style="margin-top:8px"><button class="btn sm" id="lsPlayA">🔊 Play</button><button class="btn sm" id="lsSlow">🐢 Slow</button><span class="spacer"></span>${hasKey() ? `<button class="btn sm" id="explBtn">💡 Explain</button>` : ""}</div>
+     ${S.explain[id] ? `<div class="explain">${esc(S.explain[id])}</div>` : ""}${buttons}`
+  : `<p class="small muted" style="margin:14px 0 10px">${dir === "en-it" ? "Say the Italian out loud first." : "Say the English meaning out loud first."}</p><button class="btn primary big" id="lsReveal" style="width:100%">Show answer</button>`}</div>`;
+  if ($("#lsPlayQ")) $("#lsPlayQ").onclick = () => say(p.it);
+  if (!rev){ $("#lsReveal").onclick = () => { st.rev = true; save(); render(); if (dir === "en-it" || S.settings.autoplay) say(p.it); }; return; }
+  $("#lsPlayA").onclick = () => say(p.it); $("#lsSlow").onclick = () => say(p.it, 0.75);
+  if ($("#explBtn")) $("#explBtn").onclick = () => explain(p, () => { if (view === "lezione") render(); });
+  const next = () => { st.rev = false; save(); stopSpeech(); if (st.q.length) render(); else stepDone(); };
+  if (rateMode === "srs"){
+    $$(".rate button", body).forEach(b => b.onclick = () => {
+      const r = +b.dataset.r; st.q.shift();
+      const was = S.cards[id]; if (!was) S.newLog[today()] = (S.newLog[today()] || 0) + 1;
+      S.cards[id] = schedule(was, r); S.days[today()] = (S.days[today()] || 0) + 1;
+      if (st.k === "drill"){ if (r <= 2) st.q.push(id); }
+      else if (r === 1){ st.again = st.again || {}; if (!st.again[id]){ st.again[id] = 1; st.q.push(id); } }
+      next();
+    });
+  } else {
+    $("#lsGot").onclick = () => { st.q.shift(); next(); };
+    $("#lsMiss").onclick = () => {
+      st.q.shift(); st.q.push(id);
+      if (st.k === "quiz"){ st.missed = st.missed || {}; if (!st.missed[id] && S.cards[id] && S.cards[id].s === "review"){ st.missed[id] = 1; S.cards[id] = schedule(S.cards[id], 1); } }
+      next();
+    };
+  }
+}
+function lsLearn(body, st){
+  st.j = st.j || 0;
+  if (st.j >= st.ids.length){ stepDone(); return; }
+  const p = byId(st.ids[st.j]);
+  if (!p){ st.j++; save(); render(); return; }
+  st.heard = st.heard || {};
+  const canNext = st.heard[p.id] || engine() === null;
+  body.innerHTML = `<div class="small muted center">${st.j + 1} of ${st.ids.length}</div>
+  <div class="card center" style="margin-top:8px;padding:26px 18px">
+    ${p.sub ? `<div class="subhead" style="margin-top:0">${esc(p.sub)}</div>` : ""}
+    <div class="answer" style="font-size:30px">${esc(p.it)}</div>
+    <div class="en" style="margin-top:6px">${esc(p.en)}</div>
+    <div class="row" style="justify-content:center;margin-top:18px"><button class="btn primary" id="lnPlay">🔊 Listen</button><button class="btn" id="lnSlow">🐢 Slow</button>${hasKey() ? `<button class="btn" id="explBtn">💡 Explain</button>` : ""}</div>
+    ${S.explain[p.id] ? `<div class="explain" style="text-align:left">${esc(S.explain[p.id])}</div>` : ""}
+    <p class="small muted" style="margin:16px 0 0">Now say it out loud 3 times. Copy the rhythm.</p>
+  </div>
+  <button class="btn primary big" id="lnNext" style="width:100%;margin-top:12px" ${canNext ? "" : "disabled"}>${canNext ? (st.j + 1 < st.ids.length ? "I've said it 3 times · Next →" : "Done · Next step →") : "Listen first"}</button>`;
+  const hear = rate => { st.heard[p.id] = 1; save(); say(p.it, rate); const b = $("#lnNext"); if (b && b.disabled){ b.disabled = false; b.textContent = st.j + 1 < st.ids.length ? "I've said it 3 times · Next →" : "Done · Next step →"; } };
+  $("#lnPlay").onclick = () => hear(); $("#lnSlow").onclick = () => hear(0.75);
+  if ($("#explBtn")) $("#explBtn").onclick = () => explain(p, () => { if (view === "lezione") render(); });
+  $("#lnNext").onclick = () => { st.j++; save(); if (st.j >= st.ids.length){ stepDone(); return; } render(); const np = byId(st.ids[st.j]); if (np){ st.heard[np.id] = 1; save(); say(np.it); const b = $("#lnNext"); if (b){ b.disabled = false; b.textContent = st.j + 1 < st.ids.length ? "I've said it 3 times · Next →" : "Done · Next step →"; } } };
+  if (st.j === 0 && !st.autoplayed){ st.autoplayed = true; }
+}
+function lsListen(body, st){
+  st.pos = st.pos || 0;
+  body.innerHTML = `<div class="card player">
+    <div class="it" id="lsIt"></div><div class="en" id="lsEn"></div>
+    <div class="bar" style="margin:16px 0 6px"><i id="lsBar" style="width:0"></i></div>
+    <div class="meta" id="lsMeta"></div>
+    ${st.finished ? `<p class="score" style="margin-top:14px">✓ All done</p>` : `<div class="pctl"><button class="btn primary big" id="lsPlayBtn">▶ Start</button></div>`}
+    <p class="small muted" style="margin:14px 0 0">Each phrase plays ${st.reps === 1 ? "once" : "twice"} with a pause for you to repeat it. Keep the screen on.</p>
+  </div>
+  ${st.finished ? `<button class="btn primary big" id="lsNext" style="width:100%;margin-top:12px">Next step →</button>` : ""}`;
+  updateLs(st);
+  if (st.finished){ $("#lsIt").textContent = "Bravo! 👏"; $("#lsEn").textContent = ""; $("#lsBar").style.width = "100%"; $("#lsNext").onclick = stepDone; return; }
+  $("#lsPlayBtn").onclick = () => { if (LS.playing){ stopLs(); updateLs(st); } else lsPlay(st); };
+}
+function lsSpeak(body, st, ss){
+  const ps = st.ids.map(byId).filter(Boolean);
+  if (hasKey()){
+    const key = ss.date + "-" + ss.day + "-" + ss.kind;
+    let sc = SCENARIOS.find(x => x.k === "lesson"); if (!sc){ sc = { k: "lesson" }; SCENARIOS.push(sc); }
+    Object.assign(sc, { t: "💬 " + (ss.unit || "Practice"), role: roleFor(ss.unit || ""), setting: `An everyday conversation about "${ss.unit || "daily life"}". Steer it so Conor naturally gets chances to use these phrases he is learning, without listing them: ${ps.map(p => p.it).join(" / ")}` });
+    C.inLesson = true; C.scen = "lesson";
+    if (C.lessonKey !== key){ C.lessonKey = key; C.msgs = []; C.draft = ""; setTimeout(aiTurn, 0); }
+    const mine = C.msgs.filter(m => m.who === "me").length;
+    body.innerHTML = `<div class="note">Reply in Italian at least <b>${st.need}</b> times (${Math.min(mine, st.need)}/${st.need}). Try to use today's phrases. Speak your replies with 🎙️ if it works, or type them.</div>
+      <details style="margin-top:10px"><summary class="small">Today's phrases (peek if you're stuck)</summary>${ps.map(p => `<div class="small" style="margin-top:4px">${esc(p.it)} <span class="muted">· ${esc(p.en)}</span></div>`).join("")}</details>
+      <div id="lsChat" style="margin-top:6px"></div>
+      <button class="btn primary big" id="lsNext" style="width:100%;margin-top:12px" ${mine >= st.need ? "" : "disabled"}>${mine >= st.need ? "Next step →" : `Send ${st.need - mine} more repl${st.need - mine === 1 ? "y" : "ies"}`}</button>`;
+    renderChat($("#lsChat"), micAvailable());
+    $("#lsNext").onclick = () => { C.inLesson = false; stepDone(); };
+    return;
+  }
+  st.said = st.said || {};
+  const all = ps.every(p => st.said[p.id]);
+  body.innerHTML = `<div class="note">Say each phrase out loud as if you were saying it to Silvia. Listen first if you need to. (With an API key, this step becomes a real chat with Silvia.)</div>
+    <div class="card" style="margin-top:10px;padding:4px 16px">${ps.map(p => `<div class="lib-item"><button class="btn ghost sm" data-say="${p.id}">🔊</button><div class="t"><div class="i">${esc(p.it)}</div><div class="e">${esc(p.en)}</div></div><button class="btn sm ${st.said[p.id] ? "primary" : ""}" data-said="${p.id}">${st.said[p.id] ? "✓ Said" : "Said it"}</button></div>`).join("")}</div>
+    <button class="btn primary big" id="lsNext" style="width:100%;margin-top:12px" ${all ? "" : "disabled"}>${all ? "Next step →" : "Say them all first"}</button>`;
+  $$("[data-say]", body).forEach(b => b.onclick = () => { const p = byId(b.dataset.say); if (p) say(p.it); });
+  $$("[data-said]", body).forEach(b => b.onclick = () => { const id = b.dataset.said; st.said[id] = !st.said[id]; save(); render(); });
+  $("#lsNext").onclick = stepDone;
+}
+function lsMission(body, st, ss){
+  const ps = st.ids.map(byId).filter(Boolean);
+  body.innerHTML = `<div class="card">
+    <p style="margin-top:0">Use these with Silvia today, at breakfast, at dinner or on a walk with Bruno:</p>
+    ${ps.map(p => `<div class="lib-item"><button class="btn ghost sm" data-say="${p.id}">🔊</button><div class="t"><div class="i">${esc(p.it)}</div><div class="e">${esc(p.en)}</div></div></div>`).join("")}
+    <p class="small muted">Tip: tell her you're practising. She can reply in simple Italian.</p>
+  </div>
+  <button class="btn primary big" id="lsFinish" style="width:100%;margin-top:12px">I'll do it · Finish today's lesson ✓</button>`;
+  $$("[data-say]", body).forEach(b => b.onclick = () => { const p = byId(b.dataset.say); if (p) say(p.it); });
+  $("#lsFinish").onclick = finishLesson;
+}
+function courseCard(){
+  const c = courseState(), ss = c.session, cu = currentUnit(), us = units();
+  const done = c.lastDone === today();
+  let main = "";
+  if (c.justDone && (done || c.lastMini === today())){
+    const j = c.justDone;
+    main = `<div class="center" style="padding:6px 0 4px"><div style="font-size:42px">🎉</div>
+      <h2 style="margin:4px 0">${j.kind === "mini" ? "Reviews done!" : `Day ${j.day} complete!`}</h2>
+      <p class="sub" style="margin:0 0 6px">${j.mins} minutes. ${j.kind === "mini" ? "Your reviews are on track. The full lesson is still waiting when you have time." : `Day ${j.day + 1} unlocks tomorrow.`}</p></div>`;
+  } else if (done){
+    main = `<div class="center"><div style="font-size:34px">✅</div><h2 style="margin:4px 0">Today's lesson is done</h2><p class="sub" style="margin:0">Day ${c.day} unlocks tomorrow. Practise with Silvia tonight!</p></div>`;
+  } else if (ss){
+    const st = ss.steps[ss.i];
+    main = `<div class="small muted">${ss.kind === "mini" ? "Busy-day review" : `Day ${ss.day}`}${ss.unit ? " · " + esc(ss.unit) : ""}</div>
+      <h2 style="margin:4px 0 2px">Pick up where you left off</h2>
+      <p class="sub">Step ${ss.i + 1} of ${ss.steps.length}: ${st ? STEP_NAMES[st.k] : ""}</p>
+      <button class="btn primary big" id="lessonGo" style="width:100%">▶ Continue lesson</button>`;
+  } else {
+    const preview = buildSession("full");
+    const kindTxt = !cu ? "Course complete: mixed practice of everything" : cu.mode === "check" ? `Unit test: ${esc(cu.u)}` : `${esc(cu.u)} · ${preview.newIds.length} new phrases`;
+    const dueN = dueIds().length;
+    main = `<div class="small muted">Day ${c.day}${cu ? ` · Unit ${us.indexOf(cu.u) + 1} of ${us.length}` : ""}</div>
+      <h2 style="margin:4px 0 2px">Today's lesson</h2>
+      <p class="sub">${kindTxt}. About ${sessionMins(preview)} minutes.</p>
+      <ol class="small" style="padding-left:20px;margin:0 0 14px;color:var(--muted)">${preview.steps.map(s => `<li>${STEP_NAMES[s.k]}${s.k === "review" ? ` (${s.ids.length})` : ""}</li>`).join("")}</ol>
+      <button class="btn primary big" id="lessonGo" style="width:100%">▶ Start today's lesson</button>
+      ${dueN ? `<p class="center small" style="margin:10px 0 0"><a href="#oggi" id="miniGo" class="muted">Busy day? Do just the reviews (${dueN}, about ${Math.max(2, Math.round(dueN * 0.25))} min). Your next lesson stays locked until you finish a full one.</a></p>` : ""}`;
+  }
+  const map = us.map((u, i) => {
+    const s = unitStatus(u); if (!s.total) return "";
+    const isCur = cu && cu.u === u;
+    const icon = s.done ? "✅" : isCur ? "▶️" : s.intro ? "◐" : "🔒";
+    return `<div class="secrow"><div><div>${icon} ${esc(u)}</div><div class="bar"><i style="width:${Math.round(100 * s.learned / s.total)}%"></i></div></div><div class="small muted" style="text-align:right">${s.learned}/${s.total}</div></div>`;
+  }).join("");
+  return { main, map };
+}
+function wireCourseCard(v){
+  if ($("#lessonGo", v)) $("#lessonGo", v).onclick = () => startLesson(courseState().session ? courseState().session.kind : "full");
+  if ($("#miniGo", v)) $("#miniGo", v).onclick = e => { e.preventDefault(); startLesson("mini"); };
 }
 
 /* ---------- boot ---------- */
