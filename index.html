@@ -582,7 +582,7 @@ Buon weekend! | Have a good weekend!
 
 <script>
 "use strict";
-const APP_VERSION = "v5 (11 Nov 2026)";
+const APP_VERSION = "v6 (11 Nov 2026)";
 /* ---------- helpers ---------- */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -617,7 +617,7 @@ const DEFAULT_SETTINGS = {
   newPerDay: 15, newFrom: "all", dir: "en-it", autoplay: true, rate: 0.95,
   engine: "browser", voiceName: "", model: "claude-sonnet-5-5",
   lSet: "all", lRepeats: 3, lEcho: 1, lShow: "both", lShuffle: false, lLoop: true,
-  sSet: "learning", sHide: false, guided: true, lessonNew: 12
+  sSet: "learning", sHide: false, guided: true, lessonNew: 12, silentPlay: false
 };
 let S = { v: 1, ts: 0, cards: {}, stars: {}, custom: [], topics: [], explain: {}, settings: { ...DEFAULT_SETTINGS }, days: {}, newLog: {}, speak: {} };
 
@@ -705,6 +705,7 @@ function silentUrl(){
   return URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
 }
 function mediaMode(){
+  if (!S.settings.silentPlay) return;
   try { if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback"; } catch(e){}
   try {
     if (!silentEl){ silentEl = new Audio(silentUrl()); silentEl.loop = true; silentEl.setAttribute("playsinline", ""); }
@@ -712,7 +713,7 @@ function mediaMode(){
     if (silentEl.paused) silentEl.play().catch(() => {});
   } catch(e){}
 }
-function mediaIdleSoon(){ clearTimeout(silentTimer); silentTimer = setTimeout(() => { try { silentEl && silentEl.pause(); } catch(e){} }, 20000); }
+function mediaIdleSoon(){ if (!silentEl) return; clearTimeout(silentTimer); silentTimer = setTimeout(() => { try { silentEl && silentEl.pause(); } catch(e){} }, 20000); }
 async function speak(text, rate){
   rate = rate || S.settings.rate;
   mediaMode();
@@ -978,6 +979,7 @@ function renderHome(v){
     </div>
     <div class="row" style="margin-top:12px">
       <label class="chk"><input type="checkbox" id="setAuto" ${s.autoplay?"checked":""}> Play audio when the answer is revealed</label>
+      <label class="chk"><input type="checkbox" id="setSilent" ${s.silentPlay?"checked":""}> <span>Try to play in silent mode <span class="muted">(can make the voice slow on some iPhones)</span></span></label>
       <span class="spacer"></span>
       <button class="btn sm" id="testVoice">🔊 Test voice</button>
     </div>
@@ -1017,6 +1019,7 @@ function renderHome(v){
   $("#setRate").oninput = e => { S.settings.rate = +e.target.value; $("#rateVal").textContent = S.settings.rate.toFixed(2) + "×"; };
   $("#setRate").onchange = () => save();
   $("#setAuto").onchange = e => { S.settings.autoplay = e.target.checked; save(); };
+  $("#setSilent").onchange = e => { S.settings.silentPlay = e.target.checked; save(); if (!e.target.checked){ try { silentEl && silentEl.pause(); } catch(err){} try { if (navigator.audioSession) navigator.audioSession.type = "auto"; } catch(err){} } };
   $("#testVoice").onclick = () => say("Ciao Conor! Come stai? Oggi impariamo l'italiano.");
   $("#keySave").onclick = () => { const k = $("#keyIn").value.trim(); if (!k){ toast("Paste your key first"); return; } if (!/^sk-ant-/.test(k)) toast("Saved. Note: Anthropic keys usually start with sk-ant-"); else toast("API key saved on this phone"); setKey(k); render(); };
   if ($("#keyDel")) $("#keyDel").onclick = () => { setKey(""); toast("API key removed"); render(); };
@@ -1958,6 +1961,7 @@ function wireCourseCard(v){
 
 /* ---------- boot ---------- */
 applyState(loadLocal());
+try { if (!S.settings.silentPlay && navigator.audioSession) navigator.audioSession.type = "auto"; } catch(e){}
 pickVoice();
 setSync("ok");
 { const r = makeRecognizer(); if (r) wireDictation(r); }
