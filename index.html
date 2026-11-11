@@ -582,6 +582,7 @@ Buon weekend! | Have a good weekend!
 
 <script>
 "use strict";
+const APP_VERSION = "v5 (11 Nov 2026)";
 /* ---------- helpers ---------- */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -621,10 +622,21 @@ const DEFAULT_SETTINGS = {
 let S = { v: 1, ts: 0, cards: {}, stars: {}, custom: [], topics: [], explain: {}, settings: { ...DEFAULT_SETTINGS }, days: {}, newLog: {}, speak: {} };
 
 function topicPhrases(){ const out = []; for (const t of (S.topics || [])) for (const p of (t.phrases || [])) out.push({ ...p, sec: t.name, sub: p.sub || "", topic: t.id }); return out; }
-function allPhrases(){ return BASE.concat(topicPhrases(), (S.custom || []).map(c => ({ ...c, sec: CUSTOM_SEC, sub: "" }))); }
-function uniquePhrases(){ const seen = new Set(), out = []; for (const p of allPhrases()){ if (!seen.has(p.id)){ seen.add(p.id); out.push(p); } } return out; }
+let PC = { key: "", all: [], uniq: [], map: new Map() };
+function phraseCache(){
+  const key = (S.custom || []).length + ":" + (S.topics || []).map(t => t.id + "." + (t.phrases || []).length + "." + t.name).join(",");
+  if (key !== PC.key){
+    const all = BASE.concat(topicPhrases(), (S.custom || []).map(c => ({ ...c, sec: CUSTOM_SEC, sub: "" })));
+    const map = new Map(), uniq = [];
+    for (const p of all){ if (!map.has(p.id)){ map.set(p.id, p); uniq.push(p); } }
+    PC = { key, all, uniq, map };
+  }
+  return PC;
+}
+function allPhrases(){ return phraseCache().all; }
+function uniquePhrases(){ return phraseCache().uniq; }
 function sectionsAll(){ const t = (S.topics || []).map(x => x.name); return SECTIONS.concat(t, (S.custom && S.custom.length) ? [CUSTOM_SEC] : []); }
-function byId(id){ return allPhrases().find(p => p.id === id); }
+function byId(id){ return phraseCache().map.get(id); }
 
 /* ---------- persistence ---------- */
 let saveTimer = null;
@@ -666,14 +678,21 @@ function engine(){
 }
 function browserSpeak(text, rate){
   return new Promise((res, rej) => {
+    let settled = false, guard = null;
+    const done = (fn, v) => { if (settled) return; settled = true; clearTimeout(guard); fn(v); };
     try {
-      speechSynthesis.cancel();
+      const busy = speechSynthesis.speaking || speechSynthesis.pending;
+      if (busy) speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
       u.lang = "it-IT"; if (itVoice) u.voice = itVoice; u.rate = rate;
-      u.onend = () => res();
-      u.onerror = ev => rej({ code: (ev.error === "interrupted" || ev.error === "canceled") ? "stopped" : (ev.error || "error") });
-      speechSynthesis.speak(u);
-    } catch(e){ rej({ code: "error" }); }
+      u.onend = () => done(res);
+      u.onerror = ev => done(rej, { code: (ev.error === "interrupted" || ev.error === "canceled") ? "stopped" : (ev.error || "error") });
+      // Safety net: iPhone sometimes never reports the end of speech, which used to freeze the app.
+      guard = setTimeout(() => done(res), 2500 + (text.length * 110) / Math.max(0.5, rate));
+      const go = () => { try { speechSynthesis.speak(u); } catch(e){ done(rej, { code: "error" }); } };
+      // Speaking straight after cancelling can be dropped on iPhone, so leave a short gap.
+      if (busy) setTimeout(go, 120); else go();
+    } catch(e){ done(rej, { code: "error" }); }
   });
 }
 /* Play through silent mode: mark the audio as media playback and keep a silent media track running while speaking. */
@@ -978,7 +997,10 @@ function renderHome(v){
   <h3>Backup</h3>
   <div class="card">
     <p class="small muted" style="margin-top:0">Your progress lives on this phone. Save a backup now and then (it never includes your API key).</p>
-    <div class="row"><button class="btn sm" id="bkSave">⬇︎ Save backup file</button><button class="btn sm" id="bkCopy">Copy backup</button><label class="btn sm" style="cursor:pointer">⬆︎ Restore from file<input type="file" id="bkFile" accept=".json,application/json" style="display:none"></label></div>
+    <div class="row"><button class="btn sm" id="bkSave">⬇︎ Save backup file</button><button class="btn sm" id="bkCopy">Copy backup</button><label class="btn sm" style="cursor:pointer">⬆︎ Restore from file<input type="file" id="bkFile" accept=".json,application/json" style="display:none"></label><button class="btn sm" id="bkPasteBtn">Paste a backup</button></div>
+    <div id="bkPasteBox" style="display:none;margin-top:10px"><textarea id="bkPaste" placeholder="Paste the copied backup here" style="width:100%;min-height:90px"></textarea><div class="row end" style="margin-top:8px"><button class="btn sm primary" id="bkPasteGo">Restore</button></div></div>
+    <p class="small muted" style="margin:10px 0 0">Moving progress between Safari and the home-screen app: in the one with your progress tap <b>Copy backup</b>, then in the other tap <b>Paste a backup</b>. They don't share progress by themselves.</p>
+    <p class="small muted" style="margin:6px 0 0">App version: ${APP_VERSION}</p>
     <details style="margin-top:12px"><summary class="small muted">Reset</summary>
       <p class="small muted">Clears all review progress (your stars and added phrases stay).</p>
       <button class="btn sm" id="resetBtn">Reset progress</button> <span id="resetConfirm"></span>
@@ -1003,6 +1025,9 @@ function renderHome(v){
   const backup = () => { const o = JSON.parse(JSON.stringify(S)); return JSON.stringify({ app: "frasi", exported: new Date().toISOString(), state: o }); };
   $("#bkSave").onclick = () => { const blob = new Blob([backup()], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "frasi-backup-" + today() + ".json"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
   $("#bkCopy").onclick = async () => { try { await navigator.clipboard.writeText(backup()); toast("Backup copied. Paste it into Notes to keep it."); } catch(e){ toast("Copy didn't work on this device. Use Save backup file."); } };
+  const restoreText = txt => { try { const j = JSON.parse(txt); const st = j.state || j; if (!st || typeof st !== "object" || !st.cards) throw 0; applyState(st); PC.key = ""; try { localStorage.setItem("frasi-state-v1", JSON.stringify(S)); } catch(e){} save(); toast("Backup restored ✓"); render(); } catch(err){ toast("That isn't a backup from this app"); } };
+  $("#bkPasteBtn").onclick = () => { const b = $("#bkPasteBox"); b.style.display = b.style.display === "none" ? "block" : "none"; };
+  $("#bkPasteGo").onclick = () => { const t = $("#bkPaste").value.trim(); if (!t){ toast("Paste the backup first"); return; } restoreText(t); };
   $("#bkFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const j = JSON.parse(await f.text()); const st = j.state || j; if (!st || typeof st !== "object" || !st.cards) throw 0; applyState(st); save(); toast("Backup restored"); render(); } catch(err){ toast("That file isn't a Frasi backup"); } };
   $("#resetBtn").onclick = () => {
     $("#resetConfirm").innerHTML = `<button class="btn sm rec" id="resetYes">Yes, reset everything</button>`;
