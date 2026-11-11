@@ -32,12 +32,12 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-sy
 :root{--serif:ui-serif,'New York',Georgia,'Times New Roman',serif}
 button,input,select,textarea{font:inherit;color:inherit}
 .wrap{max-width:760px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
-header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
 .top{max-width:760px;margin:0 auto;padding:10px 16px 10px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 h1{font-family:var(--serif);font-weight:650;font-size:22px;margin:0;letter-spacing:-.01em}
 h1 span{color:var(--terra)}
 .sync{font-size:12px;color:var(--muted);white-space:nowrap}
-nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:center;background:color-mix(in srgb,var(--card) 94%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:center;background:var(--card);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
 nav a{flex:1;max-width:120px;display:flex;flex-direction:column;align-items:center;gap:1px;text-decoration:none;color:var(--muted);font-weight:500;font-size:11px;padding:4px 0}
 nav a i{font-style:normal;font-size:21px;line-height:1.2;filter:grayscale(1);opacity:.7}
 nav a.on{color:var(--terra)}
@@ -140,6 +140,7 @@ input[type=range]{width:100%;accent-color:var(--terra)}
 .note{font-size:14px;color:var(--muted);background:color-mix(in srgb,var(--gold-soft) 60%,transparent);border-radius:10px;padding:10px 12px}
 .plan li{margin:6px 0}
 details summary{cursor:pointer;font-weight:500}
+body.typing nav{display:none}
 #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90vw}
 #toast.show{opacity:1}
 .kbd{font-size:12px;color:var(--muted)}
@@ -582,7 +583,7 @@ Buon weekend! | Have a good weekend!
 
 <script>
 "use strict";
-const APP_VERSION = "v6 (11 Nov 2026)";
+const APP_VERSION = "v7 (11 Nov 2026)";
 /* ---------- helpers ---------- */
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -617,7 +618,7 @@ const DEFAULT_SETTINGS = {
   newPerDay: 15, newFrom: "all", dir: "en-it", autoplay: true, rate: 0.95,
   engine: "browser", voiceName: "", model: "claude-sonnet-5-5",
   lSet: "all", lRepeats: 3, lEcho: 1, lShow: "both", lShuffle: false, lLoop: true,
-  sSet: "learning", sHide: false, guided: true, lessonNew: 12, silentPlay: false
+  sSet: "learning", sHide: false, guided: true, lessonNew: 12, silentPlay: false, appMic: false, chatVoice: true
 };
 let S = { v: 1, ts: 0, cards: {}, stars: {}, custom: [], topics: [], explain: {}, settings: { ...DEFAULT_SETTINGS }, days: {}, newLog: {}, speak: {} };
 
@@ -655,6 +656,25 @@ function save(){
 }
 window.addEventListener("pagehide", () => { try { localStorage.setItem("frasi-state-v1", JSON.stringify(S)); } catch(e){} });
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") try { localStorage.setItem("frasi-state-v1", JSON.stringify(S)); } catch(e){} });
+/* Combine another copy of the progress (e.g. from Safari) with this one, keeping the most progress from each. */
+function mergeState(o){
+  if (!o || typeof o !== "object") return;
+  const A = S;
+  const cards = { ...(o.cards || {}) };
+  for (const [id, c] of Object.entries(A.cards || {})){ const d = cards[id]; if (!d || (c.reps || 0) > (d.reps || 0) || ((c.reps || 0) === (d.reps || 0) && (c.last || 0) > (d.last || 0))) cards[id] = c; }
+  const maxMap = (x, y) => { const r = { ...(x || {}) }; for (const [k, v] of Object.entries(y || {})) r[k] = Math.max(r[k] || 0, v || 0); return r; };
+  const topics = [...(A.topics || [])];
+  for (const t of (o.topics || [])){ const m = topics.find(x => x.id === t.id || x.name === t.name); if (!m) topics.push(t); else { const have = new Set(m.phrases.map(p => p.id)); for (const p of t.phrases || []) if (!have.has(p.id)) m.phrases.push(p); } }
+  const custom = [...(A.custom || [])]; const cid = new Set(custom.map(c => c.id)); for (const c of (o.custom || [])) if (!cid.has(c.id)) custom.push(c);
+  const ca = A.course || {}, cb = o.course || {};
+  const lead = (cb.day || 1) > (ca.day || 1) ? cb : (ca.day || 1) > (cb.day || 1) ? ca : ((cb.lastDone || "") > (ca.lastDone || "") ? cb : ca);
+  const hist = [...(ca.history || []), ...(cb.history || [])].filter((h, i, arr) => arr.findIndex(x => x.date === h.date && x.day === h.day && x.mode === h.mode) === i).sort((a, b) => (a.date > b.date ? 1 : -1));
+  const course = { ...lead, checked: { ...(ca.checked || {}), ...(cb.checked || {}) }, history: hist, lastDone: [ca.lastDone || "", cb.lastDone || ""].sort().pop(), justDone: null };
+  if (course.lastDone === today() && course.session && course.session.date === today()) course.session = null;
+  S = { ...A, cards, topics, custom, course,
+    stars: { ...(o.stars || {}), ...(A.stars || {}) }, explain: { ...(o.explain || {}), ...(A.explain || {}) },
+    days: maxMap(A.days, o.days), newLog: maxMap(A.newLog, o.newLog), speak: maxMap(A.speak, o.speak) };
+}
 function getKey(){ try { return localStorage.getItem("frasi-api-key") || ""; } catch(e){ return ""; } }
 function setKey(k){ try { if (k) localStorage.setItem("frasi-api-key", k); else localStorage.removeItem("frasi-api-key"); } catch(e){} }
 function hasKey(){ return !!getKey(); }
@@ -742,8 +762,10 @@ function wireDictation(d){
   d.onState(({ state }) => { dictState = state; dictH && dictH.state && dictH.state(state); });
 }
 function micAvailable(){ return !!dict && !dictDenied; }
+const IS_IOS_APP = window.navigator.standalone === true;
 function makeRecognizer(){
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return null;
+  if (IS_IOS_APP && !S.settings.appMic) return null; // iPhone's speech recognition often hangs inside home-screen apps
   let rec = null; const h = {};
   return {
     onPartial(fn){ h.p = fn; }, onFinal(fn){ h.f = fn; }, onState(fn){ h.s = fn; },
@@ -751,8 +773,9 @@ function makeRecognizer(){
       return new Promise((res, rej) => {
         try {
           rec = new SR(); rec.lang = "it-IT"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
-          let ended = false;
-          rec.onstart = () => { h.s && h.s({ state: "listening" }); res(); };
+          let ended = false, started = false;
+          const startGuard = setTimeout(() => { if (started) return; try { rec.abort(); } catch(e){} ended = true; h.s && h.s({ state: "idle" }); rej({ code: "not_granted" }); }, 4000);
+          rec.onstart = () => { started = true; clearTimeout(startGuard); h.s && h.s({ state: "listening" }); res(); };
           rec.onresult = ev => { let interim = ""; for (let i = ev.resultIndex; i < ev.results.length; i++){ const r = ev.results[i]; if (r.isFinal) h.f && h.f({ text: r[0].transcript }); else interim += r[0].transcript; } if (interim) h.p && h.p({ text: interim }); };
           rec.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed") rej({ code: "not_granted" }); else if (e.error !== "no-speech" && e.error !== "aborted") toast("Mic error: " + e.error); };
           rec.onend = () => { if (ended) return; ended = true; h.s && h.s({ state: "idle" }); };
@@ -767,7 +790,7 @@ function micToggle(handlers){
   if (!dict) return;
   if (dictState === "listening"){ dict.stop().catch(() => {}); return; }
   dictH = handlers; stopSpeech(); stopListen();
-  dict.start().catch(e => { if (e && e.code === "not_granted"){ dictDenied = true; toast("Microphone not allowed. You can still type."); render(); } });
+  dict.start().catch(e => { if (e && e.code === "not_granted"){ dictDenied = true; toast("The mic isn't working here. Use the 🎤 on your keyboard instead."); render(); } });
 }
 
 /* ---------- answer checking ---------- */
@@ -979,6 +1002,8 @@ function renderHome(v){
     </div>
     <div class="row" style="margin-top:12px">
       <label class="chk"><input type="checkbox" id="setAuto" ${s.autoplay?"checked":""}> Play audio when the answer is revealed</label>
+      <label class="chk"><input type="checkbox" id="setChatVoice" ${s.chatVoice?"checked":""}> Read chat replies aloud automatically</label>
+      ${IS_IOS_APP ? `<label class="chk"><input type="checkbox" id="setAppMic" ${s.appMic?"checked":""}> <span>Use the app's 🎙️ mic button <span class="muted">(often freezes in home-screen apps; the keyboard's 🎤 works instead)</span></span></label>` : ""}
       <label class="chk"><input type="checkbox" id="setSilent" ${s.silentPlay?"checked":""}> <span>Try to play in silent mode <span class="muted">(can make the voice slow on some iPhones)</span></span></label>
       <span class="spacer"></span>
       <button class="btn sm" id="testVoice">🔊 Test voice</button>
@@ -1001,7 +1026,7 @@ function renderHome(v){
     <p class="small muted" style="margin-top:0">Your progress lives on this phone. Save a backup now and then (it never includes your API key).</p>
     <div class="row"><button class="btn sm" id="bkSave">⬇︎ Save backup file</button><button class="btn sm" id="bkCopy">Copy backup</button><label class="btn sm" style="cursor:pointer">⬆︎ Restore from file<input type="file" id="bkFile" accept=".json,application/json" style="display:none"></label><button class="btn sm" id="bkPasteBtn">Paste a backup</button></div>
     <div id="bkPasteBox" style="display:none;margin-top:10px"><textarea id="bkPaste" placeholder="Paste the copied backup here" style="width:100%;min-height:90px"></textarea><div class="row end" style="margin-top:8px"><button class="btn sm primary" id="bkPasteGo">Restore</button></div></div>
-    <p class="small muted" style="margin:10px 0 0">Moving progress between Safari and the home-screen app: in the one with your progress tap <b>Copy backup</b>, then in the other tap <b>Paste a backup</b>. They don't share progress by themselves.</p>
+    <p class="small muted" style="margin:10px 0 0">Moving progress between Safari and the home-screen app: in the one with your progress tap <b>Copy backup</b>, then in the other tap <b>Paste a backup</b>. They don't share progress by themselves. Pasting merges the two, so nothing is lost.</p>
     <p class="small muted" style="margin:6px 0 0">App version: ${APP_VERSION}</p>
     <details style="margin-top:12px"><summary class="small muted">Reset</summary>
       <p class="small muted">Clears all review progress (your stars and added phrases stay).</p>
@@ -1019,6 +1044,8 @@ function renderHome(v){
   $("#setRate").oninput = e => { S.settings.rate = +e.target.value; $("#rateVal").textContent = S.settings.rate.toFixed(2) + "×"; };
   $("#setRate").onchange = () => save();
   $("#setAuto").onchange = e => { S.settings.autoplay = e.target.checked; save(); };
+  $("#setChatVoice").onchange = e => { S.settings.chatVoice = e.target.checked; save(); };
+  if ($("#setAppMic")) $("#setAppMic").onchange = e => { S.settings.appMic = e.target.checked; save(); toast("Close and reopen the app for this to take effect"); };
   $("#setSilent").onchange = e => { S.settings.silentPlay = e.target.checked; save(); if (!e.target.checked){ try { silentEl && silentEl.pause(); } catch(err){} try { if (navigator.audioSession) navigator.audioSession.type = "auto"; } catch(err){} } };
   $("#testVoice").onclick = () => say("Ciao Conor! Come stai? Oggi impariamo l'italiano.");
   $("#keySave").onclick = () => { const k = $("#keyIn").value.trim(); if (!k){ toast("Paste your key first"); return; } if (!/^sk-ant-/.test(k)) toast("Saved. Note: Anthropic keys usually start with sk-ant-"); else toast("API key saved on this phone"); setKey(k); render(); };
@@ -1028,10 +1055,10 @@ function renderHome(v){
   const backup = () => { const o = JSON.parse(JSON.stringify(S)); return JSON.stringify({ app: "frasi", exported: new Date().toISOString(), state: o }); };
   $("#bkSave").onclick = () => { const blob = new Blob([backup()], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "frasi-backup-" + today() + ".json"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
   $("#bkCopy").onclick = async () => { try { await navigator.clipboard.writeText(backup()); toast("Backup copied. Paste it into Notes to keep it."); } catch(e){ toast("Copy didn't work on this device. Use Save backup file."); } };
-  const restoreText = txt => { try { const j = JSON.parse(txt); const st = j.state || j; if (!st || typeof st !== "object" || !st.cards) throw 0; applyState(st); PC.key = ""; try { localStorage.setItem("frasi-state-v1", JSON.stringify(S)); } catch(e){} save(); toast("Backup restored ✓"); render(); } catch(err){ toast("That isn't a backup from this app"); } };
+  const restoreText = txt => { try { const j = JSON.parse(txt); const st = j.state || j; if (!st || typeof st !== "object" || !st.cards) throw 0; mergeState(st); PC.key = ""; try { localStorage.setItem("frasi-state-v1", JSON.stringify(S)); } catch(e){} save(); toast("Backup merged ✓ Nothing was lost"); render(); } catch(err){ toast("That isn't a backup from this app"); } };
   $("#bkPasteBtn").onclick = () => { const b = $("#bkPasteBox"); b.style.display = b.style.display === "none" ? "block" : "none"; };
   $("#bkPasteGo").onclick = () => { const t = $("#bkPaste").value.trim(); if (!t){ toast("Paste the backup first"); return; } restoreText(t); };
-  $("#bkFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const j = JSON.parse(await f.text()); const st = j.state || j; if (!st || typeof st !== "object" || !st.cards) throw 0; applyState(st); save(); toast("Backup restored"); render(); } catch(err){ toast("That file isn't a Frasi backup"); } };
+  $("#bkFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; restoreText(await f.text()); };
   $("#resetBtn").onclick = () => {
     $("#resetConfirm").innerHTML = `<button class="btn sm rec" id="resetYes">Yes, reset everything</button>`;
     $("#resetYes").onclick = () => { S.cards = {}; S.newLog = {}; S.days = {}; S.speak = {}; save(); toast("Progress reset"); render(); };
@@ -1408,7 +1435,7 @@ async function aiTurn(){
     if (last && j.correction && keepAcc(j.correction) !== keepAcc(last.text)){ last.fix = j.correction; last.tip = j.tip || ""; }
     C.msgs.push({ who: "ai", text: String(j.reply || "").trim() || "…", en: j.reply_en || "" });
     C.busy = false; render();
-    say(C.msgs[C.msgs.length - 1].text);
+    if (S.settings.chatVoice) setTimeout(() => say(C.msgs[C.msgs.length - 1].text), 150);
   } catch(e){
     C.busy = false;
     if (last0 && last0.who === "me" && C.msgs[C.msgs.length - 1] === last0){ C.msgs.pop(); C.draft = last0.text; }
@@ -1441,7 +1468,7 @@ function renderChat(body, mic){
       ${C.busy ? `<div class="msg"><span class="muted">…</span></div>` : ""}
     </div>
     <div class="row">
-      <input type="text" id="chIn" placeholder="Rispondi in italiano…" value="${esc(C.draft)}" style="flex:1;min-width:160px" autocomplete="off" ${C.busy?"disabled":""}>
+      <input type="text" id="chIn" placeholder="${micAvailable() ? "Rispondi in italiano…" : "Type, or tap 🎤 on the keyboard"}" value="${esc(C.draft)}" style="flex:1;min-width:160px" autocomplete="off" ${C.busy?"disabled":""}>
       ${mic ? `<button class="btn icon ${dictState==="listening"?"rec":""}" id="chMic" ${C.busy?"disabled":""}>🎙️</button>` : ""}
       <button class="btn primary" id="chSend" ${C.busy?"disabled":""}>Send</button>
     </div>`;
@@ -1961,6 +1988,8 @@ function wireCourseCard(v){
 
 /* ---------- boot ---------- */
 applyState(loadLocal());
+document.addEventListener("focusin", e => { if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName) && e.target.type !== "checkbox" && e.target.type !== "range") document.body.classList.add("typing"); });
+document.addEventListener("focusout", () => setTimeout(() => { const a = document.activeElement; if (!a || !/^(INPUT|TEXTAREA)$/.test(a.tagName)) document.body.classList.remove("typing"); }, 50));
 try { if (!S.settings.silentPlay && navigator.audioSession) navigator.audioSession.type = "auto"; } catch(e){}
 pickVoice();
 setSync("ok");
