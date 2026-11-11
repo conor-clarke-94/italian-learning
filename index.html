@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Italian Learning</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Italian Learning">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f8f3ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1916" media="(prefers-color-scheme: dark)">
+<style>
+:root{
+  --bg:#f8f3ea; --card:#fffdf9; --ink:#2a2420; --muted:#7b7067; --line:#e7dccd;
+  --terra:#b9532d; --terra-soft:#f3dfd3; --olive:#5d6b35; --olive-soft:#e4e8d3;
+  --gold:#b8862b; --gold-soft:#f4e7c9; --red:#b23a3a; --red-soft:#f5dada;
+  --shadow:0 1px 2px rgba(60,40,20,.06),0 4px 14px rgba(60,40,20,.06);
+  --radius:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#1c1916; --card:#25211d; --ink:#f1ebe3; --muted:#a89d92; --line:#3a332c;
+    --terra:#e07b52; --terra-soft:#3d2a21; --olive:#a8b874; --olive-soft:#2d3122;
+    --gold:#d9a94d; --gold-soft:#3a3020; --red:#e07070; --red-soft:#3d2424;
+    --shadow:0 1px 2px rgba(0,0,0,.3); }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,system-ui,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+:root{--serif:ui-serif,'New York',Georgia,'Times New Roman',serif}
+button,input,select,textarea{font:inherit;color:inherit}
+.wrap{max-width:760px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+.top{max-width:760px;margin:0 auto;padding:10px 16px 10px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+h1{font-family:var(--serif);font-weight:650;font-size:22px;margin:0;letter-spacing:-.01em}
+h1 span{color:var(--terra)}
+.sync{font-size:12px;color:var(--muted);white-space:nowrap}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:center;background:color-mix(in srgb,var(--card) 94%,transparent);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+nav a{flex:1;max-width:120px;display:flex;flex-direction:column;align-items:center;gap:1px;text-decoration:none;color:var(--muted);font-weight:500;font-size:11px;padding:4px 0}
+nav a i{font-style:normal;font-size:21px;line-height:1.2;filter:grayscale(1);opacity:.7}
+nav a.on{color:var(--terra)}
+nav a.on i{filter:none;opacity:1}
+.topic{display:flex;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.topic:last-child{border:0}
+.gen-item{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+.gen-item input{margin-top:4px;width:18px;height:18px;accent-color:var(--terra);flex:none}
+.explain{white-space:pre-wrap;font-size:14px;line-height:1.55;background:color-mix(in srgb,var(--olive-soft) 60%,transparent);border-radius:10px;padding:10px 12px;margin-top:10px}
+h2{font-family:var(--serif);font-weight:650;font-size:24px;margin:24px 0 4px;letter-spacing:-.01em}
+h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:22px 0 8px;font-weight:600}
+.sub{color:var(--muted);margin:0 0 14px;font-size:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-family:var(--serif);font-size:28px;font-weight:650;line-height:1.1}
+.stat span{font-size:13px;color:var(--muted)}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 16px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--terra);border-color:var(--terra);color:#fff}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.ghost{background:transparent;border-color:transparent}
+.btn.sm{min-height:34px;padding:6px 12px;font-size:14px}
+.btn.icon{width:44px;padding:0}
+.btn.big{min-height:52px;font-size:17px;padding:12px 22px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.rec{background:var(--red);border-color:var(--red);color:#fff}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row.end{justify-content:flex-end}
+.spacer{flex:1}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);font-weight:500}
+select,input[type=text],input[type=number],textarea{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-height:42px;color:var(--ink)}
+textarea{resize:vertical;min-height:60px}
+.controls{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+input[type=range]{width:100%;accent-color:var(--terra)}
+.chk{display:flex;gap:8px;align-items:center;font-size:14px}
+.chk input{accent-color:var(--terra);width:18px;height:18px}
+/* recall */
+.prompt{font-family:var(--serif);font-size:28px;line-height:1.25;font-weight:500;margin:6px 0 4px;letter-spacing:-.01em}
+.answer{font-family:var(--serif);font-size:28px;line-height:1.3;font-weight:650;color:var(--terra);margin:4px 0}
+.en{color:var(--muted);font-size:16px}
+.tag{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;background:var(--olive-soft);color:var(--olive)}
+.tag.new{background:var(--gold-soft);color:var(--gold)}
+.tag.learn{background:var(--terra-soft);color:var(--terra)}
+.rate{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:16px}
+.rate button{border-radius:12px;border:1px solid var(--line);background:var(--card);padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:62px}
+.rate button b{font-size:15px}
+.rate button span{font-size:12px;color:var(--muted)}
+.rate .r1{border-color:var(--red)} .rate .r1 b{color:var(--red)}
+.rate .r2 b{color:var(--gold)} .rate .r3 b{color:var(--olive)} .rate .r4 b{color:var(--terra)}
+.rate button.sug{box-shadow:0 0 0 2px var(--olive)}
+.w{border-radius:5px;padding:0 2px}
+.w.ok{background:var(--olive-soft);color:var(--olive)}
+.w.miss{background:var(--red-soft);color:var(--red);text-decoration:underline wavy;text-underline-offset:4px}
+.score{font-weight:600}
+.bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--olive);border-radius:99px}
+.secrow{display:grid;grid-template-columns:1fr 70px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.secrow:last-child{border:0}
+/* listen */
+.player{text-align:center;padding:26px 18px}
+.player .it{font-family:var(--serif);font-size:30px;font-weight:650;line-height:1.25;min-height:76px;display:flex;align-items:center;justify-content:center}
+.player .meta{font-size:13px;color:var(--muted);margin-top:10px}
+.pctl{display:flex;justify-content:center;gap:12px;margin-top:16px}
+.pctl .play{width:64px;height:64px;border-radius:50%;font-size:22px}
+.list{margin-top:12px}
+.li{display:flex;gap:10px;align-items:flex-start;padding:10px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
+.li:hover{background:color-mix(in srgb,var(--terra-soft) 45%,transparent)}
+.li.cur{background:var(--terra-soft)}
+.li .num{font-size:12px;color:var(--muted);width:26px;flex:none;padding-top:3px;text-align:right}
+.li .t{flex:1}
+.li .t div:first-child{font-weight:500}
+.li .t div+div{font-size:14px;color:var(--muted)}
+.hidden-en .li .t div+div{display:none}
+/* library */
+.lib-item{display:flex;gap:8px;align-items:center;padding:10px 4px;border-bottom:1px solid var(--line)}
+.lib-item .t{flex:1;min-width:0}
+.lib-item .t .i{font-weight:500}
+.lib-item .t .e{font-size:14px;color:var(--muted)}
+.star{background:none;border:0;cursor:pointer;font-size:20px;color:var(--line);padding:4px 6px;line-height:1}
+.star.on{color:var(--gold)}
+.sechead{font-family:var(--serif);font-size:19px;font-weight:650;margin:22px 0 2px}
+.subhead{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:12px 0 2px;font-weight:600}
+/* chat */
+.chat{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.msg{max-width:86%;padding:10px 14px;border-radius:14px;border:1px solid var(--line);background:var(--card)}
+.msg.me{align-self:flex-end;background:var(--terra-soft);border-color:transparent}
+.msg .it{font-weight:500}
+.msg .tr{font-size:14px;color:var(--muted);margin-top:4px}
+.msg .fix{font-size:14px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+.msg .fix b{color:var(--olive)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;cursor:pointer;font-size:14px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--card)}
+.seg button{border:0;background:none;padding:8px 14px;cursor:pointer;font-weight:500;font-size:14px;color:var(--muted)}
+.seg button.on{background:var(--ink);color:var(--bg)}
+.note{font-size:14px;color:var(--muted);background:color-mix(in srgb,var(--gold-soft) 60%,transparent);border-radius:10px;padding:10px 12px}
+.plan li{margin:6px 0}
+details summary{cursor:pointer;font-weight:500}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20;max-width:90vw}
+#toast.show{opacity:1}
+.kbd{font-size:12px;color:var(--muted)}
+.center{text-align:center}
+.done{padding:36px 18px;text-align:center}
+.done .big{font-size:44px}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><h1>Italian <span>Learning</span></h1><div class="sync" id="sync">…</div></div>
+</header>
+<nav id="nav">
+  <a href="#oggi" data-v="oggi"><i>🏠</i>Oggi</a>
+  <a href="#ripasso" data-v="ripasso"><i>🧠</i>Ripasso</a>
+  <a href="#ascolto" data-v="ascolto"><i>🎧</i>Ascolto</a>
+  <a href="#parla" data-v="parla"><i>🎙️</i>Parla</a>
+  <a href="#frasi" data-v="frasi"><i>📚</i>Frasi</a>
+  <a href="#crea" data-v="crea"><i>✨</i>Crea</a>
+</nav>
+<div class="wrap"><main id="view"></main></div>
+<div id="toast"></div>
+
+<script type="text/plain" id="phrases">
+# La mattina (The morning)
+## Svegliarsi (Waking up)
+Mi sveglio alle sei. | I wake up at six.
+Mi sveglio presto. | I wake up early.
+Di solito mi alzo verso le sei e mezza. | I usually get up around half six.
+Stamattina mi sono svegliato tardi. | This morning I woke up late.
+È ora di alzarsi. | It's time to get up.
+Che ore sono? | What time is it?
+Sono ancora stanco. | I'm still tired.
+## Con Silvia
+Buongiorno amore! | Good morning, love!
+Buongiorno, hai dormito bene? | Good morning, did you sleep well?
+Come hai dormito? | How did you sleep?
+Ho dormito benissimo. | I slept really well.
+Ho dormito male stanotte. | I slept badly last night.
+Non ho dormito molto. | I didn't sleep much.
+Dai, alziamoci! | Come on, let's get up!
+Ancora cinque minuti! | Five more minutes!
+## In palestra (At the gym)
+Andiamo in palestra stamattina? | Shall we go to the gym this morning?
+Vieni in palestra con me? | Are you coming to the gym with me?
+Oggi andiamo in palestra insieme. | Today we're going to the gym together.
+Sì, andiamo! | Yes, let's go!
+Sei pronta? | Are you ready? (to Silvia)
+Sono pronto, andiamo. | I'm ready, let's go.
+Oggi non ho voglia di andare in palestra. | I don't feel like going to the gym today.
+Oggi salto la palestra. | I'm skipping the gym today.
+Di solito vado in palestra con Silvia la mattina presto. | I usually go to the gym with Silvia early in the morning.
+Cosa facciamo oggi, gambe o braccia? | What are we doing today, legs or arms?
+Oggi faccio gambe. | Today I'm doing legs.
+Oggi mi alleno con i pesi. | Today I'm training with weights.
+Oggi faccio cardio. | Today I'm doing cardio.
+Hai la borraccia? | Have you got your water bottle?
+Prendi tu le chiavi? | Will you grab the keys?
+È stato un buon allenamento. | That was a good workout.
+Sono distrutto! | I'm wrecked!
+# Bruno
+Dopo la palestra porto fuori Bruno. | After the gym I take Bruno out.
+Porto a spasso il cane. | I walk the dog.
+Vado a fare una passeggiata con Bruno. | I'm going for a walk with Bruno.
+Porto Bruno al parco. | I take Bruno to the park.
+## A Bruno (To Bruno)
+Bruno, vieni qui! | Bruno, come here!
+Bruno, andiamo! | Bruno, let's go!
+Bravo! Bravo cane! | Good boy! Good dog!
+Seduto! | Sit!
+Resta! | Stay!
+No, Bruno, lascia! | No, Bruno, leave it!
+## Con Silvia
+Dov'è il guinzaglio? | Where's the lead?
+Hai visto il guinzaglio di Bruno? | Have you seen Bruno's lead?
+Hai preso i sacchetti? | Did you grab the poo bags?
+Bruno ha già mangiato? | Has Bruno eaten already?
+Hai dato da mangiare a Bruno? | Did you feed Bruno?
+Gli do da mangiare io. | I'll feed him.
+Porti fuori tu Bruno o lo porto io? | Are you taking Bruno out or am I?
+Lo porto io, tu fai la doccia. | I'll take him, you have a shower.
+Bruno ha bisogno di un bagno. | Bruno needs a bath.
+Bruno è stanchissimo oggi. | Bruno is exhausted today.
+# Colazione e caffè (Breakfast and coffee)
+Per colazione mangio sempre l'avena preparata la sera prima. | For breakfast I always have oats prepared the night before.
+Di solito faccio colazione con gli overnight oats. | I usually have overnight oats for breakfast.
+Preparo l'avena la sera prima. | I prepare the oats the night before.
+Faccio il caffè a casa. | I make coffee at home.
+Faccio il caffè anche per Silvia. | I make coffee for Silvia too.
+## Con Silvia
+Amore, vuoi un caffè? | Love, do you want a coffee?
+Ti faccio un caffè? | Shall I make you a coffee?
+Ti preparo il caffè? | Shall I make your coffee?
+Come lo vuoi? | How do you want it?
+Con il latte o senza? | With milk or without?
+Vuoi lo zucchero? | Do you want sugar?
+Sì, grazie, con un po' di latte. | Yes, thanks, with a bit of milk.
+No grazie, per ora no. | No thanks, not for now.
+Ecco il tuo caffè. | Here's your coffee.
+Attenzione, è caldo. | Careful, it's hot.
+È buono il caffè? | Is the coffee good?
+Il caffè è finito, dobbiamo comprarlo. | We're out of coffee, we need to buy some.
+Abbiamo finito il latte. | We've run out of milk.
+Hai già fatto colazione? | Have you had breakfast already?
+Cosa mangi per colazione? | What are you having for breakfast?
+Non ho fame adesso. | I'm not hungry right now.
+Ho una fame da lupi! | I'm starving! (literally: I have a wolf's hunger)
+# Ufficio o casa (Office or home)
+Oggi vado in ufficio. | Today I'm going into the office.
+Oggi lavoro da casa. | Today I'm working from home.
+Vado in ufficio in scooter. | I go to the office on the scooter.
+Prendo lo scooter. | I'm taking the scooter.
+Oggi vado in macchina. | Today I'm driving.
+C'è traffico stamattina. | There's traffic this morning.
+Ci metto venti minuti per arrivare in ufficio. | It takes me twenty minutes to get to the office.
+Ho una riunione alle nove. | I have a meeting at nine.
+Ho tante riunioni oggi. | I have lots of meetings today.
+## Con Silvia
+Vai in ufficio oggi? | Are you going into the office today?
+Lavori da casa oggi? | Are you working from home today?
+A che ora torni stasera? | What time are you back tonight?
+Torno verso le sei. | I'll be back around six.
+Stasera faccio tardi. | I'll be late tonight.
+Ho una chiamata, puoi fare silenzio un attimo? | I have a call, can you be quiet for a moment?
+Sono in una call, ti chiamo dopo. | I'm on a call, I'll ring you after.
+Buona giornata! | Have a good day!
+Anche a te! | You too!
+Ci vediamo stasera. | See you tonight.
+A dopo! | See you later!
+Scrivimi quando arrivi. | Text me when you get there.
+Fai attenzione con lo scooter! | Be careful on the scooter!
+# Il mio lavoro (My job)
+Lavoro nelle vendite. | I work in sales.
+Lavoro per HubSpot. | I work for HubSpot.
+Sono account executive a HubSpot. | I'm an account executive at HubSpot.
+Lavoro in un'azienda di software. | I work at a software company.
+HubSpot è una piattaforma per il marketing, le vendite e il servizio clienti. | HubSpot is a platform for marketing, sales and customer service.
+Vendo software alle aziende. | I sell software to businesses.
+Mi piace il mio lavoro. | I like my job.
+È un lavoro impegnativo, ma mi piace. | It's a demanding job, but I like it.
+Ho un obiettivo di vendita da raggiungere. | I have a sales target to hit.
+Ho chiuso un contratto oggi! | I closed a deal today!
+Questo mese è stato difficile. | This month has been tough.
+## Con Silvia
+Com'è andata la giornata? | How was your day?
+Com'è andato il lavoro oggi? | How was work today?
+È andata bene, grazie. | It went well, thanks.
+Oggi è andata benissimo al lavoro. | Work went really well today.
+Oggi è stata una giornata pesante. | Today was a heavy day.
+Ho avuto una giornata lunghissima. | I've had a really long day.
+Niente di speciale. | Nothing special.
+E tu, com'è andata? | And you, how did it go?
+# La cena (Dinner)
+## Cosa mangiamo? (What are we eating?)
+Cosa mangiamo stasera? | What are we eating tonight?
+Cosa vuoi per cena? | What do you want for dinner?
+Faccio il pollo con le verdure. | I'll make chicken with veggies.
+Stasera facciamo il manzo. | Tonight we're having beef.
+Che ne dici del salmone? | How about salmon?
+Facciamo il pesce al forno? | Shall we do baked fish?
+Possiamo fare il pollo alla griglia. | We could do grilled chicken.
+Vuoi riso o patate? | Do you want rice or potatoes?
+Faccio un'insalata. | I'll make a salad.
+Preparo le verdure al forno. | I'll do roast veggies.
+## Chi cucina, chi pulisce (Who cooks, who cleans)
+Chi cucina stasera? | Who's cooking tonight?
+Cucino io stasera. | I'm cooking tonight.
+Stasera cucini tu? | Are you cooking tonight?
+Tocca a te cucinare. | It's your turn to cook.
+Tocca a me. | It's my turn.
+Io cucino e tu pulisci. | I cook and you clean.
+Facciamo a turno: uno cucina e l'altro pulisce. | We take turns: one cooks and the other cleans.
+Ieri ho cucinato io, quindi stasera cucini tu. | I cooked yesterday, so you're cooking tonight.
+Mi aiuti a tagliare le verdure? | Can you help me chop the veggies?
+Lavo io i piatti. | I'll do the dishes.
+Lavi tu i piatti stasera? | Are you doing the dishes tonight?
+Metto i piatti nella lavastoviglie. | I'll put the dishes in the dishwasher.
+Pulisco la cucina. | I'll clean the kitchen.
+## A tavola (At the table)
+A che ora mangiamo? | What time are we eating?
+La cena è pronta! | Dinner's ready!
+È pronto, vieni a mangiare! | It's ready, come and eat!
+A tavola! | Dinner's on the table!
+Buon appetito! | Enjoy your meal!
+Che buono! | So good!
+È buonissimo, complimenti! | It's delicious, well done!
+Manca un po' di sale. | It needs a bit of salt.
+È un po' salato. | It's a bit salty.
+Ne vuoi ancora? | Do you want more?
+Sono pieno. | I'm full.
+Grazie per la cena, amore. | Thanks for dinner, love.
+## Al ristorante (At a restaurant)
+Un tavolo per due, per favore. | A table for two, please.
+Avete un tavolo per stasera? | Do you have a table for tonight?
+Possiamo vedere il menù? | Can we see the menu?
+Cosa ci consiglia? | What do you recommend?
+Per me il salmone, per favore. | The salmon for me, please.
+Prendo il pollo. | I'll have the chicken.
+Un bicchiere di vino rosso, per favore. | A glass of red wine, please.
+Il conto, per favore. | The bill, please.
+# In cucina (In the kitchen)
+## Dov'è...? (Where is...?)
+Dov'è il sale? | Where's the salt?
+Dove sono i bicchieri? | Where are the glasses?
+Dove hai messo il coltello? | Where did you put the knife?
+Dove teniamo l'olio d'oliva? | Where do we keep the olive oil?
+È nel frigo. | It's in the fridge.
+È nel congelatore. | It's in the freezer.
+È nel cassetto. | It's in the drawer.
+È nell'armadietto in alto. | It's in the top cupboard.
+È sul piano di lavoro. | It's on the bench.
+È sul tavolo. | It's on the table.
+È nella lavastoviglie. | It's in the dishwasher.
+È accanto ai fornelli. | It's next to the stove.
+Non lo trovo. | I can't find it. (masculine thing)
+Non la trovo. | I can't find it. (feminine thing)
+Mi passi il sale, per favore? | Can you pass me the salt, please?
+Me lo passi, per favore? | Can you pass it to me, please?
+Puoi prendermi una forchetta? | Can you get me a fork?
+Ecco qua. | Here you go.
+## Gli utensili (Utensils)
+Mi serve un coltello. | I need a knife.
+Dov'è il tagliere? | Where's the chopping board?
+Mi passi la padella? | Can you pass me the frying pan?
+Hai visto le pinze? | Have you seen the tongs?
+Mi serve un piatto. | I need a plate.
+Prendi le forchette e i coltelli. | Grab the forks and knives.
+Apparecchio la tavola. | I'll set the table.
+Accendi il forno, per favore. | Turn the oven on, please.
+Il forno è caldo? | Is the oven hot?
+Metti l'acqua a bollire. | Put the water on to boil.
+Spegni il fornello. | Turn off the hob.
+Abbiamo bisogno della carta da forno. | We need baking paper.
+## Il cibo (Food)
+Abbiamo ancora delle uova? | Do we still have eggs?
+C'è del pollo nel frigo? | Is there chicken in the fridge?
+Ci sono dei pomodori? | Are there any tomatoes?
+Dobbiamo comprare il pane. | We need to buy bread.
+Mi passi l'olio d'oliva? | Can you pass me the olive oil?
+Ci vuole più aglio. | It needs more garlic.
+Taglio la cipolla. | I'll chop the onion.
+Metto un po' di sale e pepe. | I'll add a bit of salt and pepper.
+Il pollo è cotto? | Is the chicken cooked?
+Non è ancora cotto. | It's not cooked yet.
+Le verdure sono pronte. | The veggies are ready.
+Dobbiamo fare la spesa. | We need to do the food shop.
+Facciamo la lista della spesa? | Shall we make a shopping list?
+Vado al supermercato, ti serve qualcosa? | I'm going to the supermarket, do you need anything?
+Compro le verdure, il riso e il salmone. | I'll buy veggies, rice and salmon.
+# La sera (The evening)
+Guardiamo qualcosa stasera? | Shall we watch something tonight?
+Cosa guardiamo? | What are we watching?
+In questo periodo stiamo guardando Nocturne su Netflix. | At the moment we're watching Nocturne on Netflix.
+Guardiamo un episodio di Nocturne? | Shall we watch an episode of Nocturne?
+Ne guardiamo un altro? | Shall we watch another one?
+Solo un altro episodio! | Just one more episode!
+Dai, l'ultimo e poi a letto. | Come on, last one and then bed.
+Ti piace questa serie? | Do you like this show?
+Mi piace tantissimo. | I really love it.
+È un po' lenta all'inizio. | It's a bit slow at the start.
+Cos'è successo? | What happened?
+Non ho capito, puoi tornare indietro? | I didn't get that, can you go back?
+Metti in pausa un attimo. | Pause it for a sec.
+Dov'è il telecomando? | Where's the remote?
+Mettiamo i sottotitoli in italiano? | Shall we put Italian subtitles on?
+Sono stanco, vado a letto. | I'm tired, I'm going to bed.
+Andiamo a letto? | Shall we go to bed?
+Hai messo la sveglia? | Did you set the alarm?
+Domani mi sveglio presto. | I'm getting up early tomorrow.
+Buonanotte amore. | Goodnight, love.
+Sogni d'oro. | Sweet dreams.
+# Il weekend (The weekend)
+Cosa facciamo questo weekend? | What are we doing this weekend?
+Che programmi abbiamo per il fine settimana? | What are our plans for the weekend?
+Andiamo a prendere un caffè? | Shall we go and get a coffee?
+Andiamo al bar stamattina? | Shall we go to the café this morning?
+C'è un bar nuovo a Bondi, proviamolo. | There's a new café in Bondi, let's try it.
+Facciamo colazione fuori? | Shall we have breakfast out?
+Facciamo una passeggiata? | Shall we go for a walk?
+Andiamo a fare una passeggiata lungo la costa? | Shall we go for a walk along the coast?
+Andiamo al mare. | Let's go to the beach.
+Portiamo anche Bruno. | Let's bring Bruno too.
+Che bella giornata! | What a beautiful day!
+Fa caldo oggi. | It's hot today.
+Piove, restiamo a casa. | It's raining, let's stay home.
+Questo weekend chiamo i miei genitori. | This weekend I'm calling my parents.
+Chiamiamo i tuoi genitori domenica? | Shall we call your parents on Sunday?
+Facciamo una videochiamata con i tuoi? | Shall we video call your folks?
+## Al bar (At the café)
+Un flat white, per favore. | A flat white, please.
+Per me un cappuccino. | A cappuccino for me.
+Un caffè e un cornetto, per favore. | A coffee and a croissant, please.
+Da portare via, per favore. | Takeaway, please.
+Lo prendo qui. | I'll have it here.
+Quanto costa? | How much is it?
+Posso pagare con la carta? | Can I pay by card?
+Grazie, buona giornata! | Thanks, have a good day!
+# Come stai? (How are you?)
+## Come mi sento (How I feel)
+Sto bene, grazie. | I'm well, thanks.
+Sto benissimo. | I'm great.
+Così così. | So so.
+Non sto molto bene. | I'm not feeling great.
+Sono stanco. | I'm tired.
+Sono stanchissimo. | I'm exhausted.
+Sono un po' stressato. | I'm a bit stressed.
+Sono nervoso per una riunione. | I'm nervous about a meeting.
+Sono contento. | I'm happy.
+Sono di buon umore. | I'm in a good mood.
+Sono di cattivo umore. | I'm in a bad mood.
+Mi sento meglio oggi. | I feel better today.
+Ho fame. | I'm hungry.
+Ho sete. | I'm thirsty.
+Ho sonno. | I'm sleepy.
+Ho freddo. | I'm cold.
+Ho caldo. | I'm hot.
+Ho mal di testa. | I have a headache.
+Mi annoio. | I'm bored.
+Non vedo l'ora! | I can't wait!
+## Chiedere a Silvia (Asking Silvia)
+Come stai, amore? | How are you, love?
+Come ti senti oggi? | How are you feeling today?
+Tutto bene? | Everything OK?
+Che hai? | What's wrong?
+C'è qualcosa che non va? | Is something wrong?
+Sei stanca? | Are you tired?
+Sei arrabbiata? | Are you angry?
+Com'è andata la tua giornata? | How did your day go?
+Cosa hai fatto oggi? | What did you do today?
+Raccontami! | Tell me!
+Novità? | Any news?
+Cosa c'è di nuovo? | What's new?
+Come va al lavoro? | How's work going?
+Hai sentito la tua famiglia? | Have you heard from your family?
+Come stanno i tuoi genitori? | How are your parents?
+Hai parlato con tua madre? | Did you talk to your mum?
+Ti va di parlarne? | Do you want to talk about it?
+## Rispondere (Responding)
+Ti capisco. | I understand you.
+Mi dispiace. | I'm sorry.
+Che peccato! | What a shame!
+Che bello! | How lovely!
+Sono contento per te. | I'm happy for you.
+Hai bisogno di qualcosa? | Do you need anything?
+Posso aiutarti? | Can I help you?
+Mi sei mancata. | I missed you. (to a woman)
+Ti voglio bene. | I love you. (warm, also for family)
+Ti amo. | I love you. (romantic)
+# Con i genitori di Silvia (With Silvia's parents)
+## Salutare (Greeting)
+Ciao! Come state? | Hi! How are you both?
+Buongiorno! Come sta? | Good morning! How are you? (formal, to one person)
+Che piacere vedervi! | So nice to see you!
+Che bello sentirvi! | So nice to hear from you!
+Come va lì? | How are things there?
+Che tempo fa lì? | What's the weather like there?
+Qui fa caldo, è quasi estate. | It's warm here, it's nearly summer.
+## Sto imparando l'italiano (I'm learning Italian)
+Sto imparando l'italiano. | I'm learning Italian.
+Sto studiando l'italiano. | I'm studying Italian.
+Faccio lezioni online con un insegnante in Italia. | I have online lessons with a teacher in Italy.
+Studio un po' ogni giorno. | I study a bit every day.
+Parlo ancora poco, ma sto migliorando. | I don't speak much yet, but I'm improving.
+Capisco più di quanto parlo. | I understand more than I speak.
+Scusate, il mio italiano non è perfetto. | Sorry, my Italian isn't perfect.
+Voglio parlare con voi in italiano. | I want to speak with you in Italian.
+Silvia mi aiuta tanto. | Silvia helps me a lot.
+Potete parlare più lentamente, per favore? | Could you speak more slowly, please?
+Può ripetere, per favore? | Could you repeat that, please? (formal)
+Non ho capito. | I didn't understand.
+Come si dice in italiano? | How do you say it in Italian?
+Cosa vuol dire? | What does it mean?
+## Con Silvia
+Saluta i tuoi da parte mia. | Say hi to your folks from me.
+Come stanno i tuoi? | How are your folks?
+# Chiacchiere (Small talk)
+## Salutare (Greeting)
+Ciao, come stai? | Hi, how are you?
+Come va? | How's it going?
+Tutto bene? | All good?
+Bene, grazie, e tu? | Good, thanks, and you?
+Tutto bene, grazie. | All good, thanks.
+Non c'è male. | Not bad.
+Piacere! | Nice to meet you!
+Piacere di conoscerti. | Nice to meet you.
+Mi chiamo Conor. | My name is Conor.
+Come ti chiami? | What's your name?
+## Chi sono (Who I am)
+Sono irlandese, ma vivo a Sydney. | I'm Irish, but I live in Sydney.
+Abito a Bondi. | I live in Bondi.
+Di dove sei? | Where are you from?
+Cosa fai nella vita? | What do you do for a living?
+Lavoro nelle vendite per un'azienda di software. | I work in sales for a software company.
+Mia moglie è italiana. | My wife is Italian.
+Sì, sto imparando l'italiano. | Yes, I'm learning Italian.
+Da quanto tempo studi l'italiano? | How long have you been studying Italian?
+Studio l'italiano da qualche mese. | I've been studying Italian for a few months.
+Parli inglese? | Do you speak English?
+## Programmi (Plans)
+Che programmi hai per questa settimana? | What are your plans for this week?
+Cosa fai questo weekend? | What are you doing this weekend?
+Hai programmi per il weekend? | Got any plans for the weekend?
+Niente di speciale, mi riposo. | Nothing special, I'm resting.
+Questo weekend andiamo al mare. | This weekend we're going to the beach.
+A marzo andiamo in Nuova Zelanda. | In March we're going to New Zealand.
+Hai fatto qualcosa di bello il weekend scorso? | Did you do anything nice last weekend?
+Il weekend scorso siamo andati a fare una passeggiata. | Last weekend we went for a walk.
+## Novità (News)
+Novità? | Any news?
+Ci sono novità? | Is there any news?
+Niente di nuovo. | Nothing new.
+Tutto come al solito. | Same as usual.
+Che tempo fa? | What's the weather like?
+Oggi fa bel tempo. | The weather's nice today.
+Che caldo! | It's so hot!
+## Reagire (Reacting)
+Davvero? | Really?
+Che bello! | How nice!
+Interessante! | Interesting!
+Ah sì? Racconta! | Oh yeah? Tell me!
+Hai ragione. | You're right.
+Esatto. | Exactly.
+Certo! | Of course!
+Va bene. | OK.
+D'accordo. | Agreed.
+Dipende. | It depends.
+Forse. | Maybe.
+Non lo so. | I don't know.
+Scusa, non ho capito. | Sorry, I didn't catch that.
+Puoi ripetere, per favore? | Can you repeat that, please?
+Puoi parlare più piano? | Can you speak more slowly?
+## Salutarsi (Saying goodbye)
+Devo andare, scusa. | I have to go, sorry.
+È stato un piacere. | It was a pleasure.
+Ci vediamo! | See you!
+Alla prossima! | Until next time!
+Buona serata! | Have a good evening!
+Buon weekend! | Have a good weekend!
+</script>
+
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const MIN = 60000, DAY = 86400000;
+function hash(s){ let h = 5381; for (const ch of s) h = ((h << 5) + h + ch.codePointAt(0)) | 0; return "p" + (h >>> 0).toString(36); }
+function today(d = new Date()){ return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function endOfToday(){ const d = new Date(); d.setHours(23,59,59,999); return d.getTime(); }
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 2600); }
+function shuffle(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------- phrase data ---------- */
+const BASE = [];
+const SECTIONS = [];
+(function parse(){
+  let sec = null, sub = "";
+  for (const raw of $("#phrases").textContent.split("\n")){
+    const line = raw.trim(); if (!line) continue;
+    if (line.startsWith("## ")){ sub = line.slice(3).trim(); continue; }
+    if (line.startsWith("# ")){ sec = line.slice(2).trim(); sub = ""; SECTIONS.push(sec); continue; }
+    const bar = line.indexOf("|");
+    const it = (bar < 0 ? line : line.slice(0, bar)).trim();
+    const en = bar < 0 ? "" : line.slice(bar + 1).trim();
+    BASE.push({ id: hash(it), it, en, sec, sub });
+  }
+})();
+const CUSTOM_SEC = "Le mie frasi (My phrases)";
+
+/* ---------- state ---------- */
+const DEFAULT_SETTINGS = {
+  newPerDay: 15, newFrom: "all", dir: "en-it", autoplay: true, rate: 0.95,
+  engine: "browser", voiceName: "", model: "claude-sonnet-5-5",
+  lSet: "all", lRepeats: 3, lEcho: 1, lShow: "both", lShuffle: false, lLoop: true,
+  sSet: "learning", sHide: false
+};
+let S = { v: 1, ts: 0, cards: {}, stars: {}, custom: [], topics: [], explain: {}, settings: { ...DEFAULT_SETTINGS }, days: {}, newLog: {}, speak: {} };
+
+function topicPhrases(){ const out = []; for (const t of (S.topics || [])) for (const p of (t.phrases || [])) out.push({ ...p, sec: t.name, sub: p.sub || "", topic: t.id }); return out; }
+function allPhrases(){ return BASE.concat(topicPhrases(), (S.custom || []).map(c => ({ ...c, sec: CUSTOM_SEC, sub: "" }))); }
+function uniquePhrases(){ const seen = new Set(), out = []; for (const p of allPhrases()){ if (!seen.has(p.id)){ seen.add(p.id); out.push(p); } } return out; }
+function sectionsAll(){ const t = (S.topics || []).map(x => x.name); return SECTIONS.concat(t, (S.custom && S.custom.length) ? [CUSTOM_SEC] : []); }
+function byId(id){ return allPhrases().find(p => p.id === id); }
+
+/* ---------- persistence ---------- */
+let saveTimer = null;
+function setSync(m){ const el = $("#sync"); if (el) el.textContent = m === "err" ? "⚠︎ Not saved" : "Saved on this phone"; }
+function loadLocal(){ try { const j = localStorage.getItem("frasi-state-v1"); if (j) return JSON.parse(j); } catch(e){} return null; }
+function applyState(o){ if (!o || typeof o !== "object") return;
+  S = { ...S, ...o, settings: { ...DEFAULT_SETTINGS, ...(o.settings || {}) } };
+  for (const k of ["cards","stars","days","newLog","speak","explain"]) if (!S[k] || typeof S[k] !== "object") S[k] = {};
+  if (!Array.isArray(S.custom)) S.custom = [];
+  if (!Array.isArray(S.topics)) S.topics = [];
+}
+function save(){
+  S.ts = Date.now();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem("frasi-state-v1", JSON.stringify(S)); setSync("ok"); } catch(e){ setSync("err"); toast("Couldn't save. Storage may be full."); } }, 300);
+}
+window.addEventListener("pagehide", () => { try { localStorage.setItem("frasi-state-v1", JSON.stringify(S)); } catch(e){} });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") try { localStorage.setItem("frasi-state-v1", JSON.stringify(S)); } catch(e){} });
+function getKey(){ try { return localStorage.getItem("frasi-api-key") || ""; } catch(e){ return ""; } }
+function setKey(k){ try { if (k) localStorage.setItem("frasi-api-key", k); else localStorage.removeItem("frasi-api-key"); } catch(e){} }
+function hasKey(){ return !!getKey(); }
+
+/* ---------- speech out ---------- */
+let tts = null, itVoice = null, speaking = false;
+let itVoices = [];
+function pickVoice(){
+  if (!("speechSynthesis" in window)) return;
+  itVoices = speechSynthesis.getVoices().filter(v => /^it/i.test(v.lang));
+  const want = S.settings && S.settings.voiceName;
+  itVoice = (want && itVoices.find(v => v.name === want)) || itVoices.find(v => /enhanced|premium|migliorat/i.test(v.name)) || itVoices.find(v => /Alice|Federica|Paola|Emma|Google italiano/i.test(v.name)) || itVoices[0] || null;
+}
+if ("speechSynthesis" in window){ pickVoice(); try { speechSynthesis.addEventListener("voiceschanged", () => { const had = itVoices.length; pickVoice(); if (!had && itVoices.length && view === "oggi") render(); }); } catch(e){} }
+function engine(){
+  const e = S.settings.engine, hasB = "speechSynthesis" in window;
+  if (e === "claude") return tts ? "claude" : (hasB ? "browser" : null);
+  if (e === "browser") return hasB ? "browser" : (tts ? "claude" : null);
+  if (hasB && itVoice) return "browser";
+  return tts ? "claude" : (hasB ? "browser" : null);
+}
+function browserSpeak(text, rate){
+  return new Promise((res, rej) => {
+    try {
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = "it-IT"; if (itVoice) u.voice = itVoice; u.rate = rate;
+      u.onend = () => res();
+      u.onerror = ev => rej({ code: (ev.error === "interrupted" || ev.error === "canceled") ? "stopped" : (ev.error || "error") });
+      speechSynthesis.speak(u);
+    } catch(e){ rej({ code: "error" }); }
+  });
+}
+async function speak(text, rate){
+  rate = rate || S.settings.rate;
+  const e = engine();
+  speaking = true;
+  try {
+    if (e === "claude"){
+      try { await tts.speak(text, { language: "it", rate: Math.min(1.5, Math.max(0.7, rate)), voice: S.settings.voice }); }
+      catch(err){
+        if (err && (err.code === "viewer_stopped" || err.code === "busy")) throw err;
+        if ("speechSynthesis" in window) await browserSpeak(text, rate); else throw err;
+      }
+    } else if (e === "browser"){ await browserSpeak(text, rate); }
+    else throw { code: "no_voice" };
+  } finally { speaking = false; }
+}
+function stopSpeech(){ try { tts && tts.stop(); } catch(e){} try { "speechSynthesis" in window && speechSynthesis.cancel(); } catch(e){} }
+function say(text, rate){ stopListen(); speak(text, rate).catch(e => { if (e && e.code === "no_voice") toast("No Italian voice available on this device"); }); }
+
+/* ---------- dictation (speech in) ---------- */
+let dict = null, dictState = "idle", dictH = null, dictDenied = false;
+function wireDictation(d){
+  dict = d;
+  d.onPartial(({ text }) => dictH && dictH.partial && dictH.partial(text));
+  d.onFinal(({ text }) => dictH && dictH.final && dictH.final(text));
+  d.onState(({ state }) => { dictState = state; dictH && dictH.state && dictH.state(state); });
+}
+function micAvailable(){ return !!dict && !dictDenied; }
+function makeRecognizer(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; if (!SR) return null;
+  let rec = null; const h = {};
+  return {
+    onPartial(fn){ h.p = fn; }, onFinal(fn){ h.f = fn; }, onState(fn){ h.s = fn; },
+    start(){
+      return new Promise((res, rej) => {
+        try {
+          rec = new SR(); rec.lang = "it-IT"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+          let ended = false;
+          rec.onstart = () => { h.s && h.s({ state: "listening" }); res(); };
+          rec.onresult = ev => { let interim = ""; for (let i = ev.resultIndex; i < ev.results.length; i++){ const r = ev.results[i]; if (r.isFinal) h.f && h.f({ text: r[0].transcript }); else interim += r[0].transcript; } if (interim) h.p && h.p({ text: interim }); };
+          rec.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed") rej({ code: "not_granted" }); else if (e.error !== "no-speech" && e.error !== "aborted") toast("Mic error: " + e.error); };
+          rec.onend = () => { if (ended) return; ended = true; h.s && h.s({ state: "idle" }); };
+          rec.start();
+        } catch(e){ rej({ code: "error" }); }
+      });
+    },
+    stop(){ try { rec && rec.stop(); } catch(e){} return Promise.resolve(); }
+  };
+}
+function micToggle(handlers){
+  if (!dict) return;
+  if (dictState === "listening"){ dict.stop().catch(() => {}); return; }
+  dictH = handlers; stopSpeech(); stopListen();
+  dict.start().catch(e => { if (e && e.code === "not_granted"){ dictDenied = true; toast("Microphone not allowed. You can still type."); render(); } });
+}
+
+/* ---------- answer checking ---------- */
+function normWord(w){ return w.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]/g, ""); }
+function lev(a, b){ if (a === b) return 0; const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
+  let prev = Array.from({ length: n + 1 }, (_, i) => i);
+  for (let i = 1; i <= m; i++){ const cur = [i]; for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j-1] + 1, prev[j-1] + (a[i-1] === b[j-1] ? 0 : 1)); prev = cur; }
+  return prev[n]; }
+function wordEq(a, b){ if (a === b) return true; const L = Math.max(a.length, b.length); return L >= 4 && lev(a, b) <= (L >= 8 ? 2 : 1); }
+function compare(target, attempt){
+  const disp = target.split(/\s+/).filter(Boolean);
+  const T = disp.map(normWord), A = attempt.split(/\s+/).map(normWord).filter(Boolean);
+  const keep = T.map(w => w.length > 0);
+  const m = T.length, n = A.length;
+  const dp = Array.from({ length: m + 1 }, () => new Array(n + 1).fill(0));
+  for (let i = m - 1; i >= 0; i--) for (let j = n - 1; j >= 0; j--)
+    dp[i][j] = (T[i] && wordEq(T[i], A[j])) ? dp[i+1][j+1] + 1 : Math.max(dp[i+1][j], dp[i][j+1]);
+  const ok = new Array(m).fill(false); let i = 0, j = 0;
+  while (i < m && j < n){ if (T[i] && wordEq(T[i], A[j])){ ok[i] = true; i++; j++; } else if (dp[i+1][j] >= dp[i][j+1]) i++; else j++; }
+  const total = keep.filter(Boolean).length || 1;
+  const hit = ok.filter(Boolean).length;
+  const html = disp.map((w, k) => keep[k] ? `<span class="w ${ok[k] ? "ok" : "miss"}">${esc(w)}</span>` : esc(w)).join(" ");
+  return { score: hit / total, html };
+}
+function verdict(s){ return s >= 0.95 ? "Perfetto! 🎉" : s >= 0.75 ? "Quasi! Very close" : s >= 0.4 ? "Not bad, keep going" : "Riprova, listen again"; }
+
+/* ---------- spaced repetition ---------- */
+function schedule(c, r, now = Date.now()){
+  c = c ? { ...c } : { s: "new", st: 0, ivl: 0, ease: 2.5, reps: 0, lap: 0, due: now };
+  if (c.s === "new"){ c.s = "learn"; c.st = 0; c.intro = today(); }
+  if (c.s === "learn" || c.s === "relearn"){
+    const relearn = c.s === "relearn", steps = relearn ? [10] : [1, 10];
+    if (r === 1){ c.st = 0; c.due = now + steps[0] * MIN; }
+    else if (r === 2){ c.due = now + (c.st === 0 && steps.length > 1 ? 6 : steps[c.st] * 1.5) * MIN; }
+    else if (r === 3){
+      c.st++;
+      if (c.st >= steps.length){ c.s = "review"; c.ivl = relearn ? Math.max(1, c.ivl) : 1; c.due = now + c.ivl * DAY; }
+      else c.due = now + steps[c.st] * MIN;
+    } else { c.s = "review"; c.ivl = relearn ? Math.max(2, c.ivl + 1) : 4; c.due = now + c.ivl * DAY; }
+  } else {
+    if (r === 1){ c.lap++; c.ease = Math.max(1.3, c.ease - 0.2); c.ivl = Math.max(1, Math.round(c.ivl * 0.3)); c.s = "relearn"; c.st = 0; c.due = now + 10 * MIN; }
+    else {
+      let iv;
+      if (r === 2){ iv = c.ivl * 1.2; c.ease = Math.max(1.3, c.ease - 0.15); }
+      else if (r === 3){ iv = c.ivl * c.ease; }
+      else { iv = c.ivl * c.ease * 1.3; c.ease = Math.min(3.2, c.ease + 0.15); }
+      iv = Math.max(c.ivl + 1, Math.round(iv * (0.95 + Math.random() * 0.1)));
+      c.ivl = Math.min(iv, 365); c.due = now + c.ivl * DAY;
+    }
+  }
+  c.reps++; c.last = now;
+  return c;
+}
+function fmtIvl(ms){
+  if (ms < 60 * MIN) return Math.max(1, Math.round(ms / MIN)) + " min";
+  if (ms < DAY) return Math.round(ms / (60 * MIN)) + " h";
+  const d = Math.round(ms / DAY);
+  if (d < 31) return d + (d === 1 ? " day" : " days");
+  const mo = Math.round(d / 30); return mo + (mo === 1 ? " month" : " months");
+}
+function status(id){
+  const c = S.cards[id];
+  if (!c) return { k: "new", label: "New" };
+  if (c.s !== "review") return { k: "learn", label: "Learning" };
+  if (c.ivl >= 21) return { k: "known", label: "Mastered" };
+  return { k: "known", label: c.ivl + "d" };
+}
+function queue(){
+  const eod = endOfToday(), learn = [], rev = [], fresh = [];
+  for (const p of uniquePhrases()){
+    const c = S.cards[p.id];
+    if (!c){ fresh.push(p); continue; }
+    if (c.s === "review"){ if (c.due <= eod) rev.push(p); }
+    else learn.push(p);
+  }
+  const newLeft = Math.max(0, S.settings.newPerDay - (S.newLog[today()] || 0));
+  const nf = S.settings.newFrom;
+  const freshF = nf === "all" ? fresh : fresh.filter(p => p.sec === nf);
+  rev.sort((a, b) => S.cards[a.id].due - S.cards[b.id].due);
+  learn.sort((a, b) => S.cards[a.id].due - S.cards[b.id].due);
+  return { learn, rev, fresh: freshF.slice(0, newLeft), newLeft, freshTotal: freshF.length, allFresh: fresh.length };
+}
+let lastShown = null;
+function pickNext(){
+  const q = queue(), now = Date.now();
+  const dueLearn = q.learn.filter(p => S.cards[p.id].due <= now);
+  const cands = dueLearn.concat(q.rev, q.fresh);
+  if (cands.length) return cands.find(p => p.id !== lastShown) || cands[0];
+  if (q.learn.length) return { wait: S.cards[q.learn[0].id].due, ahead: q.learn[0] };
+  return null;
+}
+function streak(){
+  let n = 0; const d = new Date();
+  if (!S.days[today(d)]) d.setDate(d.getDate() - 1);
+  while (S.days[today(d)]){ n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+
+/* ---------- sets (listen / speak) ---------- */
+function setOptions(sel){
+  const special = [["all","All phrases"],["learning","In progress (learning)"],["today","Introduced today"],["hard","Tricky ones"],["starred","★ Starred"]];
+  return special.map(([v,l]) => `<option value="${v}" ${sel===v?"selected":""}>${l}</option>`).join("") +
+    `<optgroup label="Sections">` + sectionsAll().map(s => `<option value="${esc(s)}" ${sel===s?"selected":""}>${esc(s)}</option>`).join("") + `</optgroup>`;
+}
+function setPhrases(key){
+  const all = allPhrases();
+  const u = uniquePhrases();
+  switch (key){
+    case "all": return all;
+    case "learning": return u.filter(p => { const c = S.cards[p.id]; return c && (c.s !== "review" || c.ivl < 7); });
+    case "today": return u.filter(p => { const c = S.cards[p.id]; return c && c.intro === today(); });
+    case "hard": return u.filter(p => { const c = S.cards[p.id]; return c && (c.lap > 0 || c.ease < 2.3); });
+    case "starred": return u.filter(p => S.stars[p.id]);
+    default: return all.filter(p => p.sec === key);
+  }
+}
+
+/* ---------- routing ---------- */
+const VIEWS = ["oggi","ripasso","ascolto","parla","frasi","crea"];
+let view = "oggi";
+function route(){
+  const h = (location.hash || "").replace("#", "");
+  view = VIEWS.includes(h) ? h : "oggi";
+  $$("#nav a").forEach(a => a.classList.toggle("on", a.dataset.v === view));
+  if (view !== "ripasso") dictH = null;
+  render();
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+function go(v){ if (location.hash === "#" + v) route(); else location.hash = v; }
+function render(){
+  const v = $("#view");
+  if (view === "oggi") renderHome(v);
+  else if (view === "ripasso") renderRecall(v);
+  else if (view === "ascolto") renderListen(v);
+  else if (view === "parla") renderSpeak(v);
+  else if (view === "crea") renderCreate(v);
+  else renderLibrary(v);
+}
+
+/* ---------- HOME ---------- */
+function renderHome(v){
+  const q = queue(), u = uniquePhrases();
+  const due = q.learn.filter(p => S.cards[p.id].due <= endOfToday()).length + q.rev.length;
+  let learned = 0, mastered = 0;
+  for (const p of u){ const c = S.cards[p.id]; if (c && c.s === "review"){ learned++; if (c.ivl >= 21) mastered++; } }
+  const st = streak(), doneToday = S.days[today()] || 0;
+  const s = S.settings;
+  const secRows = sectionsAll().map(sec => {
+    const ps = u.filter(p => p.sec === sec); if (!ps.length) return "";
+    const k = ps.filter(p => S.cards[p.id] && S.cards[p.id].s === "review").length;
+    return `<div class="secrow"><div><div>${esc(sec)}</div><div class="bar"><i style="width:${Math.round(100*k/ps.length)}%"></i></div></div><div class="small muted" style="text-align:right">${k}/${ps.length}</div></div>`;
+  }).join("");
+  v.innerHTML = `
+  <h2>Ciao Conor 👋</h2>
+  <p class="sub">${u.length} phrases · ${doneToday ? doneToday + " reviews done today" : "Nothing reviewed yet today"}</p>
+  <div class="grid">
+    <div class="stat"><b>${due}</b><span>Due to review</span></div>
+    <div class="stat"><b>${q.fresh.length}</b><span>New left today</span></div>
+    <div class="stat"><b>${learned}</b><span>Learned</span></div>
+    <div class="stat"><b>${mastered}</b><span>Mastered (21d+)</span></div>
+    <div class="stat"><b>${st}🔥</b><span>Day streak</span></div>
+  </div>
+  <div class="card" style="margin-top:16px">
+    <h3 style="margin-top:0">Today's 15 minutes</h3>
+    <ol class="plan" style="padding-left:20px;margin:0 0 14px">
+      <li><b>Ripasso</b> (about 8 min): see the English, <b>say the Italian out loud</b>, then reveal and rate yourself honestly.</li>
+      <li><b>Ascolto</b> (about 4 min): play "Introduced today" or "In progress" and <b>repeat each phrase in the pause</b>.</li>
+      <li><b>Parla</b> (about 3 min): check a few phrases with the mic, or have a short chat with Silvia.</li>
+      <li>Then use 2 or 3 of today's phrases with the real Silvia. 😉</li>
+    </ol>
+    <div class="row">
+      <button class="btn primary big" data-go="ripasso">${due + q.fresh.length ? "Start review (" + (due + q.fresh.length) + ")" : "Review"}</button>
+      <button class="btn big" data-go="ascolto">🎧 Listen</button>
+      <button class="btn big" data-go="parla">🎙️ Speak</button>
+    </div>
+  </div>
+  <h3>Progress by section</h3>
+  <div class="card" style="padding:6px 16px">${secRows}</div>
+  <h3>Settings</h3>
+  <div class="card">
+    <div class="controls">
+      <label class="f">New phrases per day
+        <select id="setNew">${[5,10,15,20,25,30,40].map(n => `<option ${s.newPerDay===n?"selected":""}>${n}</option>`).join("")}</select></label>
+      <label class="f">Take new phrases from
+        <select id="setFrom"><option value="all">All sections, in order</option>${sectionsAll().map(x => `<option value="${esc(x)}" ${s.newFrom===x?"selected":""}>${esc(x)}</option>`).join("")}</select></label>
+      <label class="f">Review direction
+        <select id="setDir">
+          <option value="en-it" ${s.dir==="en-it"?"selected":""}>English → Italian (speaking)</option>
+          <option value="it-en" ${s.dir==="it-en"?"selected":""}>Italian audio → meaning (listening)</option>
+          <option value="mix" ${s.dir==="mix"?"selected":""}>Mix of both</option>
+        </select></label>
+      <label class="f">Italian voice
+        <select id="setEng">${itVoices.length ? itVoices.map(vc => `<option value="${esc(vc.name)}" ${itVoice && itVoice.name===vc.name?"selected":""}>${esc(vc.name)}</option>`).join("") : `<option>Device default</option>`}</select></label>
+      <label class="f">Speed: <span id="rateVal">${s.rate.toFixed(2)}×</span>
+        <input type="range" id="setRate" min="0.7" max="1.3" step="0.05" value="${s.rate}"></label>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <label class="chk"><input type="checkbox" id="setAuto" ${s.autoplay?"checked":""}> Play audio when the answer is revealed</label>
+      <span class="spacer"></span>
+      <button class="btn sm" id="testVoice">🔊 Test voice</button>
+    </div>
+    <p class="small muted" style="margin:12px 0 0">For a much more natural voice, download one on your iPhone: Settings → Accessibility → Spoken Content → Voices → Italian → choose an <b>Enhanced</b> or <b>Premium</b> voice, then reopen the app and pick it here. Also turn off silent mode, or you won't hear anything.</p>
+  </div>
+  <h3>AI (topics, chat, explanations)</h3>
+  <div class="card">
+    <p class="small muted" style="margin-top:0">${hasKey() ? "✓ API key saved on this phone." : "Paste your Anthropic API key to turn on ✨ Crea, the Silvia chat and phrase explanations. Get one at console.anthropic.com → API Keys (add a little credit under Billing)."}</p>
+    <div class="row"><input type="password" id="keyIn" placeholder="${hasKey() ? "••••••••••••" : "sk-ant-..."}" style="flex:1;min-width:180px" autocomplete="off"><button class="btn sm primary" id="keySave">Save</button>${hasKey() ? `<button class="btn sm" id="keyDel">Remove</button>` : ""}</div>
+    <label class="f" style="margin-top:12px">AI model
+      <select id="setModel">
+        <option value="claude-sonnet-5-5" ${s.model==="claude-sonnet-5-5"?"selected":""}>Claude Sonnet 5.5 (best Italian, a few cents a day)</option>
+        <option value="claude-haiku-5-5" ${s.model==="claude-haiku-5-5"?"selected":""}>Claude Haiku 5.5 (cheapest and fastest)</option>
+      </select></label>
+    ${hasKey() ? `<div class="row" style="margin-top:10px"><button class="btn sm" id="keyTest">Test AI</button><span class="small muted" id="keyTestOut"></span></div>` : ""}
+  </div>
+  <h3>Backup</h3>
+  <div class="card">
+    <p class="small muted" style="margin-top:0">Your progress lives on this phone. Save a backup now and then (it never includes your API key).</p>
+    <div class="row"><button class="btn sm" id="bkSave">⬇︎ Save backup file</button><button class="btn sm" id="bkCopy">Copy backup</button><label class="btn sm" style="cursor:pointer">⬆︎ Restore from file<input type="file" id="bkFile" accept=".json,application/json" style="display:none"></label></div>
+    <details style="margin-top:12px"><summary class="small muted">Reset</summary>
+      <p class="small muted">Clears all review progress (your stars and added phrases stay).</p>
+      <button class="btn sm" id="resetBtn">Reset progress</button> <span id="resetConfirm"></span>
+    </details>
+  </div>`;
+  $$("[data-go]", v).forEach(b => b.onclick = () => go(b.dataset.go));
+  $("#setNew").onchange = e => { S.settings.newPerDay = +e.target.value; save(); render(); };
+  $("#setFrom").onchange = e => { S.settings.newFrom = e.target.value; save(); render(); };
+  $("#setDir").onchange = e => { S.settings.dir = e.target.value; save(); };
+  $("#setEng").onchange = e => { S.settings.voiceName = e.target.value; pickVoice(); save(); say("Ciao! Sono la tua nuova voce."); };
+  $("#setRate").oninput = e => { S.settings.rate = +e.target.value; $("#rateVal").textContent = S.settings.rate.toFixed(2) + "×"; };
+  $("#setRate").onchange = () => save();
+  $("#setAuto").onchange = e => { S.settings.autoplay = e.target.checked; save(); };
+  $("#testVoice").onclick = () => say("Ciao Conor! Come stai? Oggi impariamo l'italiano.");
+  $("#keySave").onclick = () => { const k = $("#keyIn").value.trim(); if (!k){ toast("Paste your key first"); return; } if (!/^sk-ant-/.test(k)) toast("Saved. Note: Anthropic keys usually start with sk-ant-"); else toast("API key saved on this phone"); setKey(k); render(); };
+  if ($("#keyDel")) $("#keyDel").onclick = () => { setKey(""); toast("API key removed"); render(); };
+  $("#setModel").onchange = e => { S.settings.model = e.target.value; save(); };
+  if ($("#keyTest")) $("#keyTest").onclick = async () => { const o = $("#keyTestOut"); o.textContent = "Testing…"; try { const r = await ai("Reply with exactly: Funziona!", 20); o.textContent = "✓ " + r.text.trim(); } catch(e){ o.textContent = aiError(e); } };
+  const backup = () => { const o = JSON.parse(JSON.stringify(S)); return JSON.stringify({ app: "frasi", exported: new Date().toISOString(), state: o }); };
+  $("#bkSave").onclick = () => { const blob = new Blob([backup()], { type: "application/json" }); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "frasi-backup-" + today() + ".json"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000); };
+  $("#bkCopy").onclick = async () => { try { await navigator.clipboard.writeText(backup()); toast("Backup copied. Paste it into Notes to keep it."); } catch(e){ toast("Copy didn't work on this device. Use Save backup file."); } };
+  $("#bkFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const j = JSON.parse(await f.text()); const st = j.state || j; if (!st || typeof st !== "object" || !st.cards) throw 0; applyState(st); save(); toast("Backup restored"); render(); } catch(err){ toast("That file isn't a Frasi backup"); } };
+  $("#resetBtn").onclick = () => {
+    $("#resetConfirm").innerHTML = `<button class="btn sm rec" id="resetYes">Yes, reset everything</button>`;
+    $("#resetYes").onclick = () => { S.cards = {}; S.newLog = {}; S.days = {}; S.speak = {}; save(); toast("Progress reset"); render(); };
+  };
+}
+
+/* ---------- RECALL ---------- */
+let R = null; // {p, dir, revealed, attempt, partial, result}
+function newRound(){
+  const nx = pickNext();
+  if (!nx || nx.wait){ R = { empty: true, wait: nx && nx.wait, ahead: nx && nx.ahead }; return; }
+  let dir = S.settings.dir;
+  if (dir === "mix") dir = Math.random() < 0.65 ? "en-it" : "it-en";
+  R = { p: nx, dir, revealed: false, attempt: "", partial: "", result: null };
+  lastShown = nx.id;
+}
+function renderRecall(v){
+  if (!R || R.empty || !byId(R.p.id)) newRound();
+  clearTimeout(renderRecall._t);
+  if (R.empty){
+    const q = queue();
+    if (R.wait) renderRecall._t = setTimeout(() => { if (view === "ripasso") render(); }, Math.max(1000, R.wait - Date.now() + 500));
+    const waitTxt = R.wait ? `The next learning phrase comes back in ${fmtIvl(Math.max(0, R.wait - Date.now()))}.` : "";
+    v.innerHTML = `<div class="card done" style="margin-top:20px">
+      <div class="big">🎉</div><h2 style="margin-top:6px">Fatto per adesso!</h2>
+      <p class="sub">${waitTxt || "You're all caught up for today."}${!R.wait && q.allFresh ? " Come back tomorrow for more new phrases, or take extra now." : ""}</p>
+      <div class="row" style="justify-content:center">
+        ${R.wait ? `<button class="btn primary" id="aheadBtn">Review it now</button>` : ""}
+        ${q.allFresh ? `<button class="btn" id="moreBtn">+5 new phrases</button>` : ""}
+        <button class="btn" data-go="ascolto">🎧 Listen instead</button>
+      </div></div>`;
+    $$("[data-go]", v).forEach(b => b.onclick = () => go(b.dataset.go));
+    if ($("#aheadBtn")) $("#aheadBtn").onclick = () => { const p = R.ahead; R = { p, dir: S.settings.dir === "it-en" ? "it-en" : "en-it", revealed: false, attempt: "", partial: "", result: null }; lastShown = p.id; render(); };
+    if ($("#moreBtn")) $("#moreBtn").onclick = () => { S.newLog[today()] = Math.max(0, (S.newLog[today()] || 0) - 5); save(); R = null; render(); };
+    return;
+  }
+  const p = R.p, c = S.cards[p.id], stt = status(p.id), q = queue();
+  const dueCount = q.learn.filter(x => S.cards[x.id].due <= Date.now()).length + q.rev.length + q.fresh.length;
+  const isEn = R.dir === "en-it";
+  const now = Date.now();
+  const prev = [1,2,3,4].map(r => fmtIvl(schedule(c, r, now).due - now));
+  let sug = 0;
+  if (R.result) sug = R.result.score >= 0.95 ? 3 : R.result.score >= 0.7 ? 2 : 1;
+  const mic = micAvailable();
+  v.innerHTML = `
+  <div class="row" style="margin-top:18px"><span class="tag ${stt.k}">${stt.label}</span><span class="small muted">${esc(p.sec)}${p.sub ? " · " + esc(p.sub) : ""}</span><span class="spacer"></span><span class="small muted">${dueCount} left</span></div>
+  <div class="card" style="margin-top:10px">
+    ${isEn ? `<div class="small muted">How do you say…</div><div class="prompt">${esc(p.en)}</div>`
+           : `<div class="small muted">Listen. What does it mean?</div><div class="row" style="margin:10px 0"><button class="btn primary" id="playQ">🔊 Play</button><button class="btn" id="playQs">🐢 Slow</button></div>`}
+    ${!R.revealed ? `
+      <p class="small muted" style="margin:14px 0 8px">${isEn ? "Say it out loud first. Then type or speak it to check (optional)." : "Say the meaning in your head, then reveal."}</p>
+      ${isEn ? `<div class="row">
+        <input type="text" id="att" placeholder="Type the Italian…" value="${esc(R.attempt || R.partial)}" style="flex:1;min-width:180px" autocomplete="off" autocapitalize="off" spellcheck="false">
+        ${mic ? `<button class="btn icon ${dictState==="listening"?"rec":""}" id="micBtn" title="Speak your answer">🎙️</button>` : ""}
+      </div>` : ""}
+      <div class="row" style="margin-top:14px"><button class="btn primary big" id="revealBtn" style="flex:1">Show answer</button></div>
+      <div class="kbd center" style="margin-top:8px">Space or Enter to reveal · 1–4 to rate</div>`
+    : `
+      <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+      <div class="answer">${R.result ? R.result.html : esc(p.it)}</div>
+      ${!isEn ? `<div class="prompt" style="font-size:22px">${esc(p.en)}</div>` : ""}
+      ${R.result ? `<div class="small" style="margin-top:4px"><span class="score">${Math.round(R.result.score*100)}% · ${verdict(R.result.score)}</span> <span class="muted">You said: “${esc(R.attempt)}”</span></div>` : ""}
+      <div class="row" style="margin-top:10px">
+        <button class="btn sm" id="playA">🔊 Play</button><button class="btn sm" id="playAs">🐢 Slow</button>
+        <button class="star ${S.stars[p.id]?"on":""}" id="starBtn" title="Star">★</button>
+        <span class="spacer"></span>${hasKey() ? `<button class="btn sm" id="explBtn">💡 Explain</button>` : ""}
+      </div>
+      ${S.explain[p.id] ? `<div class="explain">${esc(S.explain[p.id])}</div>` : ""}
+      <div class="rate">
+        <button class="r1 ${sug===1?"sug":""}" data-r="1"><b>Again</b><span>${prev[0]}</span></button>
+        <button class="r2 ${sug===2?"sug":""}" data-r="2"><b>Hard</b><span>${prev[1]}</span></button>
+        <button class="r3 ${sug===3?"sug":""}" data-r="3"><b>Good</b><span>${prev[2]}</span></button>
+        <button class="r4" data-r="4"><b>Easy</b><span>${prev[3]}</span></button>
+      </div>`}
+  </div>
+  ${!R.revealed && isEn ? "" : ""}
+  <p class="small muted center" style="margin-top:14px">Rate honestly: <b>Again</b> = couldn't say it · <b>Hard</b> = got it with effort · <b>Good</b> = got it · <b>Easy</b> = instant.</p>`;
+  if (!isEn){ $("#playQ").onclick = () => say(p.it); $("#playQs").onclick = () => say(p.it, 0.75); }
+  if (!R.revealed){
+    const att = $("#att");
+    if (att){ att.oninput = e => { R.attempt = e.target.value; R.partial = ""; };
+      att.onkeydown = e => { if (e.key === "Enter"){ e.preventDefault(); reveal(); } }; }
+    if ($("#micBtn")) $("#micBtn").onclick = () => micToggle({
+      partial: t => { R.partial = (R.attempt ? R.attempt + " " : "") + t; const a = $("#att"); if (a) a.value = R.partial; },
+      final: t => { R.attempt = ((R.attempt || "") + " " + t).trim(); R.partial = ""; const a = $("#att"); if (a) a.value = R.attempt; },
+      state: st => { const b = $("#micBtn"); if (b) b.classList.toggle("rec", st === "listening"); if (st === "idle" && R && !R.revealed && R.attempt) reveal(); }
+    });
+    $("#revealBtn").onclick = reveal;
+    if (!isEn && !R.autoplayed){ R.autoplayed = true; /* needs a user gesture; offered via Play */ }
+  } else {
+    $("#playA").onclick = () => say(p.it); $("#playAs").onclick = () => say(p.it, 0.75);
+    $("#starBtn").onclick = () => { if (S.stars[p.id]) delete S.stars[p.id]; else S.stars[p.id] = 1; save(); $("#starBtn").classList.toggle("on"); };
+    $$(".rate button", v).forEach(b => b.onclick = () => rate(+b.dataset.r));
+    if ($("#explBtn")) $("#explBtn").onclick = () => explain(p, () => { if (view === "ripasso") render(); });
+  }
+}
+async function explain(p, done){
+  if (S.explain[p.id]){ done(); return; }
+  const b = $("#explBtn"); if (b){ b.disabled = true; b.textContent = "💡 …"; }
+  try {
+    const r = await ai(`Explain this Italian phrase to a beginner (A1 to A2) English speaker, briefly and practically.
+Phrase: "${p.it}" (meaning: "${p.en}")
+Format, plain text only, no markdown symbols:
+Line 1: a word-by-word breakdown, e.g. "Mi sveglio = I wake (myself) up · alle = at the · sei = six"
+Line 2: one short grammar or usage note (why it's said this way).
+Line 3: one useful variation, e.g. how to say it about Silvia, or in the past.
+Keep it under 70 words.`, 300);
+    S.explain[p.id] = r.text.trim(); save();
+  } catch(e){ toast(aiError(e)); }
+  done();
+}
+function reveal(){
+  if (!R || R.revealed) return;
+  if (dict && dictState === "listening") dict.stop().catch(() => {});
+  R.revealed = true;
+  if (R.dir === "en-it" && R.attempt && R.attempt.trim()) R.result = compare(R.p.it, R.attempt);
+  render();
+  if (S.settings.autoplay) say(R.p.it);
+}
+function rate(r){
+  if (!R || !R.revealed) return;
+  const p = R.p, was = S.cards[p.id];
+  if (!was) S.newLog[today()] = (S.newLog[today()] || 0) + 1;
+  S.cards[p.id] = schedule(was, r);
+  S.days[today()] = (S.days[today()] || 0) + 1;
+  save(); stopSpeech(); newRound(); render();
+}
+document.addEventListener("keydown", e => {
+  if (view !== "ripasso" || !R || R.empty) return;
+  const tag = (e.target.tagName || "").toLowerCase();
+  if (!R.revealed && (e.key === " " || e.key === "Enter") && tag !== "input" && tag !== "textarea" && tag !== "button"){ e.preventDefault(); reveal(); }
+  else if (R.revealed && ["1","2","3","4"].includes(e.key) && tag !== "input"){ e.preventDefault(); rate(+e.key); }
+});
+
+/* ---------- LISTEN ---------- */
+const L = { list: [], i: 0, rep: 0, playing: false, token: 0, key: "" };
+function listenList(){
+  const s = S.settings, key = s.lSet + "|" + s.lShuffle + "|" + allPhrases().length;
+  if (key !== L.key){ let ps = setPhrases(s.lSet); if (s.lShuffle) ps = shuffle(ps); L.list = ps; L.key = key; L.i = Math.min(L.i, Math.max(0, ps.length - 1)); L.rep = 0; }
+  return L.list;
+}
+function stopListen(){ if (L.playing){ L.playing = false; L.token++; stopSpeech(); updatePlayer(); } }
+async function playLoop(){
+  const tok = ++L.token; L.playing = true;
+  while (L.playing && tok === L.token){
+    const p = L.list[L.i]; if (!p){ L.playing = false; break; }
+    updatePlayer();
+    const t0 = performance.now();
+    try { await speak(p.it); }
+    catch(e){ if (tok !== L.token) return; if (e && e.code === "no_voice"){ toast("No Italian voice available on this device"); L.playing = false; break; } }
+    if (tok !== L.token) return;
+    const dur = Math.max(600, performance.now() - t0);
+    await sleep(S.settings.lEcho * dur + 450);
+    if (tok !== L.token) return;
+    L.rep++;
+    const reps = S.settings.lRepeats;
+    if (reps !== 0 && L.rep >= reps){
+      L.rep = 0; L.i++;
+      if (L.i >= L.list.length){
+        if (S.settings.lLoop){ L.i = 0; if (S.settings.lShuffle) L.list = shuffle(L.list); }
+        else { L.i = 0; L.playing = false; break; }
+      }
+    }
+  }
+  updatePlayer();
+}
+function jump(i){ if (!L.list.length) return; L.i = (i + L.list.length) % L.list.length; L.rep = 0; if (L.playing){ L.token++; stopSpeech(); playLoop(); } else updatePlayer(); }
+function updatePlayer(){
+  const box = $("#player"); if (!box) return;
+  const p = L.list[L.i], s = S.settings;
+  const reps = s.lRepeats === 0 ? "∞" : s.lRepeats;
+  $("#pIt").textContent = p ? (s.lShow === "none" ? "🎧" : p.it) : "No phrases in this set yet";
+  $("#pEn").textContent = p && s.lShow === "both" ? p.en : "";
+  $("#pMeta").textContent = p ? `Phrase ${L.i + 1} of ${L.list.length} · repetition ${Math.min(L.rep + 1, s.lRepeats || 99)} of ${reps}` : "";
+  $("#pPlay").textContent = L.playing ? "⏸" : "▶";
+  $$(".li", $("#lList")).forEach(el => el.classList.toggle("cur", +el.dataset.i === L.i));
+}
+function renderListen(v){
+  const s = S.settings, list = listenList();
+  v.innerHTML = `
+  <h2>Ascolto</h2>
+  <p class="sub">Hear the Italian on repeat. <b>Repeat each phrase out loud in the pause</b> (shadowing).</p>
+  <div class="card">
+    <div class="controls">
+      <label class="f">Phrases<select id="lSet">${setOptions(s.lSet)}</select></label>
+      <label class="f">Repeat each phrase
+        <select id="lRep">${[[1,"1×"],[2,"2×"],[3,"3×"],[5,"5×"],[10,"10×"],[0,"Forever (one phrase)"]].map(([n,l]) => `<option value="${n}" ${s.lRepeats===n?"selected":""}>${l}</option>`).join("")}</select></label>
+      <label class="f">Pause to repeat it
+        <select id="lEcho">${[[0,"No pause"],[1,"1× phrase length"],[1.5,"1.5× phrase length"],[2,"2× phrase length"]].map(([n,l]) => `<option value="${n}" ${s.lEcho===n?"selected":""}>${l}</option>`).join("")}</select></label>
+      <label class="f">Show
+        <select id="lShow"><option value="both" ${s.lShow==="both"?"selected":""}>Italian + English</option><option value="it" ${s.lShow==="it"?"selected":""}>Italian only</option><option value="none" ${s.lShow==="none"?"selected":""}>Nothing (just listen)</option></select></label>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <label class="chk"><input type="checkbox" id="lShuf" ${s.lShuffle?"checked":""}> Shuffle</label>
+      <label class="chk"><input type="checkbox" id="lLoop" ${s.lLoop?"checked":""}> Loop the set</label>
+      <span class="spacer"></span>
+      <label class="f" style="flex-direction:row;align-items:center;gap:8px">Speed <input type="range" id="lRate" min="0.7" max="1.3" step="0.05" value="${s.rate}" style="width:120px"> <span id="lRateV">${s.rate.toFixed(2)}×</span></label>
+    </div>
+  </div>
+  <div class="card player" id="player" style="margin-top:12px">
+    <div class="it" id="pIt"></div>
+    <div class="en" id="pEn"></div>
+    <div class="pctl">
+      <button class="btn icon" id="pPrev" title="Previous">⏮</button>
+      <button class="btn primary play" id="pPlay">▶</button>
+      <button class="btn icon" id="pNext" title="Next">⏭</button>
+    </div>
+    <div class="meta" id="pMeta"></div>
+  </div>
+  <div class="list ${s.lShow==="none"||s.lShow==="it"?"hidden-en":""}" id="lList">
+    ${list.map((p, i) => `<div class="li" data-i="${i}"><div class="num">${i+1}</div><div class="t"><div>${s.lShow==="none"?"•••":esc(p.it)}</div><div>${esc(p.en)}</div></div></div>`).join("") || `<p class="muted center">Nothing here yet. Start some reviews first, or pick a section.</p>`}
+  </div>`;
+  const upd = (k, val) => { S.settings[k] = val; save(); const was = L.playing; stopListen(); L.key = ""; render(); if (was && k !== "lSet" && k !== "lShuffle") { /* user can press play again */ } };
+  $("#lSet").onchange = e => { L.i = 0; upd("lSet", e.target.value); };
+  $("#lRep").onchange = e => { S.settings.lRepeats = +e.target.value; save(); L.rep = 0; updatePlayer(); };
+  $("#lEcho").onchange = e => { S.settings.lEcho = +e.target.value; save(); };
+  $("#lShow").onchange = e => upd("lShow", e.target.value);
+  $("#lShuf").onchange = e => { L.i = 0; upd("lShuffle", e.target.checked); };
+  $("#lLoop").onchange = e => { S.settings.lLoop = e.target.checked; save(); };
+  $("#lRate").oninput = e => { S.settings.rate = +e.target.value; $("#lRateV").textContent = S.settings.rate.toFixed(2) + "×"; };
+  $("#lRate").onchange = () => save();
+  $("#pPlay").onclick = () => { if (L.playing) stopListen(); else if (L.list.length) playLoop(); };
+  $("#pPrev").onclick = () => jump(L.i - 1);
+  $("#pNext").onclick = () => jump(L.i + 1);
+  $$(".li", v).forEach(el => el.onclick = () => { const i = +el.dataset.i; L.i = i; L.rep = 0; L.token++; stopSpeech(); playLoop(); });
+  updatePlayer();
+}
+
+/* ---------- SPEAK ---------- */
+let P = { mode: "check", i: 0, list: [], key: "", attempt: "", partial: "", result: null };
+let C = { scen: null, msgs: [], busy: false, showEn: false, draft: "" };
+async function ai(prompt, maxTokens){
+  const key = getKey(); if (!key) throw { code: "no_key" };
+  let r;
+  try {
+    r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+      body: JSON.stringify({ model: S.settings.model || "claude-sonnet-5-5", max_tokens: maxTokens || 1200, messages: [{ role: "user", content: prompt }] })
+    });
+  } catch(e){ throw { code: "network", message: "No internet connection" }; }
+  if (!r.ok){
+    let msg = ""; try { msg = (await r.json()).error.message; } catch(e){}
+    throw { code: r.status === 401 ? "bad_key" : r.status === 429 ? "rate_limited" : r.status === 400 && /credit/i.test(msg) ? "credit" : "http", message: msg };
+  }
+  const j = await r.json();
+  return { text: (j.content || []).filter(b => b.type === "text").map(b => b.text).join("") };
+}
+function aiError(e){
+  const c = e && e.code;
+  return c === "no_key" ? "Add your API key in Oggi → Settings first"
+    : c === "bad_key" ? "That API key was rejected. Check it in Settings."
+    : c === "rate_limited" ? "Too many requests. Wait a moment and try again."
+    : c === "credit" ? "Your Anthropic account needs credit (console.anthropic.com → Billing)."
+    : c === "network" ? "No internet connection"
+    : "AI request failed" + (e && e.message ? ": " + e.message : "");
+}
+const SCENARIOS = [
+  { k: "colazione", t: "☕ Morning coffee", role: "Silvia, Conor's Italian wife", setting: "At home in the morning. Conor is making coffee and breakfast (overnight oats) for both of them after the gym." },
+  { k: "cena", t: "🍗 What's for dinner?", role: "Silvia, Conor's Italian wife", setting: "Evening at home deciding what to cook (chicken, beef, fish or salmon with veggies), who cooks and who cleans up, and where things are in the kitchen." },
+  { k: "giornata", t: "💬 How was your day?", role: "Silvia, Conor's Italian wife", setting: "Evening on the sofa. Chat about how each other's day went, how they're feeling, any news, and what to watch on Netflix (they're watching Nocturne)." },
+  { k: "genitori", t: "📱 Call with Silvia's parents", role: "Silvia's mum (her dad sometimes chips in)", setting: "A video call from Italy. They ask how Conor is, about life in Sydney, Bruno the dog, his job, and are delighted he's learning Italian. Speak to him with tu; they say voi to the couple." },
+  { k: "bar", t: "🥐 At a café", role: "an Italian barista at a café in Bondi", setting: "Conor orders coffee and something to eat on a weekend morning. Short, friendly service chat." },
+  { k: "smalltalk", t: "👋 Meeting someone new", role: "Luca, a friendly Italian guy Conor has just met", setting: "Small talk: names, where they're from, what they do for work, learning Italian, plans for the week and weekend." }
+];
+const ABOUT = "About Conor: Irish, lives in Bondi (Sydney) with his Italian wife Silvia and their dog Bruno. Works in sales at HubSpot, sometimes in the office (rides a scooter), sometimes from home. Goes to the gym with Silvia in the morning, then walks Bruno. Has overnight oats and makes coffee for both of them. They take turns cooking and cleaning up. Weekends: coffee at a café, walks, calls with parents. Level: beginner A1 to A2.";
+function speakList(){
+  const s = S.settings, key = s.sSet + "|" + allPhrases().length;
+  if (key !== P.key){ P.list = shuffle(setPhrases(s.sSet)); P.key = key; P.i = 0; P.attempt = ""; P.result = null; }
+  return P.list;
+}
+function renderSpeak(v){
+  const mic = micAvailable();
+  v.innerHTML = `
+  <h2>Parla</h2>
+  <p class="sub">Speak out loud and get feedback.</p>
+  <div class="seg" style="margin-bottom:14px"><button data-m="check" class="${P.mode==="check"?"on":""}">🎯 Repeat &amp; check</button><button data-m="chat" class="${P.mode==="chat"?"on":""}">💬 Chat with Silvia</button></div>
+  <div id="speakBody"></div>`;
+  $$(".seg button", v).forEach(b => b.onclick = () => { P.mode = b.dataset.m; render(); });
+  const body = $("#speakBody");
+  if (P.mode === "check") renderCheck(body, mic); else renderChat(body, mic);
+}
+function renderCheck(body, mic){
+  const s = S.settings, list = speakList(), p = list[P.i];
+  body.innerHTML = `
+  <div class="row" style="margin-bottom:10px">
+    <label class="f" style="flex:1">Phrases<select id="sSet">${setOptions(s.sSet)}</select></label>
+    <label class="chk" style="margin-top:18px"><input type="checkbox" id="sHide" ${s.sHide?"checked":""}> Hide the Italian (harder)</label>
+  </div>
+  ${!mic ? `<div class="note" style="margin-bottom:12px">🎙️ Mic checking isn't available in this browser. You can still play each phrase and repeat it out loud.</div>` : ""}
+  ${p ? `<div class="card center">
+    <div class="small muted">${P.i + 1} of ${list.length}</div>
+    <div class="answer" style="margin:12px 0 4px">${P.result ? P.result.html : (s.sHide ? "🎧 •••" : esc(p.it))}</div>
+    <div class="en">${esc(p.en)}</div>
+    <div class="row" style="justify-content:center;margin-top:16px">
+      <button class="btn" id="cPlay">🔊 Listen</button><button class="btn" id="cSlow">🐢 Slow</button>
+      ${mic ? `<button class="btn primary ${dictState==="listening"?"rec":""}" id="cMic">${dictState==="listening" ? "⏹ Stop" : "🎙️ Say it"}</button>` : ""}
+    </div>
+    <div id="cOut" style="margin-top:14px;min-height:24px" class="small">${P.result ? `<span class="score">${Math.round(P.result.score*100)}% · ${verdict(P.result.score)}</span><br><span class="muted">Heard: “${esc(P.attempt)}”</span>` : (P.partial ? `<span class="muted">${esc(P.partial)}…</span>` : "")}</div>
+    <div class="row" style="justify-content:center;margin-top:14px">
+      <button class="btn sm" id="cPrev">← Back</button>
+      ${P.result ? `<button class="btn sm" id="cAgain">↺ Try again</button>` : ""}
+      <button class="btn sm primary" id="cNext">Next →</button>
+    </div>
+  </div>` : `<p class="muted center">Nothing in this set yet. Pick a section, or do some reviews first.</p>`}`;
+  $("#sSet").onchange = e => { S.settings.sSet = e.target.value; save(); P.key = ""; render(); };
+  $("#sHide").onchange = e => { S.settings.sHide = e.target.checked; save(); render(); };
+  if (!p) return;
+  $("#cPlay").onclick = () => say(p.it); $("#cSlow").onclick = () => say(p.it, 0.75);
+  const move = d => { P.i = (P.i + d + list.length) % list.length; P.attempt = ""; P.partial = ""; P.result = null; render(); };
+  $("#cNext").onclick = () => move(1); $("#cPrev").onclick = () => move(-1);
+  if ($("#cAgain")) $("#cAgain").onclick = () => { P.attempt = ""; P.result = null; render(); };
+  if ($("#cMic")) $("#cMic").onclick = () => {
+    if (dictState !== "listening"){ P.attempt = ""; P.partial = ""; P.result = null; }
+    micToggle({
+      partial: t => { P.partial = t; const o = $("#cOut"); if (o) o.innerHTML = `<span class="muted">${esc((P.attempt + " " + t).trim())}…</span>`; },
+      final: t => { P.attempt = (P.attempt + " " + t).trim(); P.partial = ""; },
+      state: st => {
+        if (st === "idle"){
+          if (P.attempt){ P.result = compare(p.it, P.attempt); const best = S.speak[p.id] || 0; if (P.result.score > best){ S.speak[p.id] = Math.round(P.result.score * 100) / 100; save(); } }
+          if (view === "parla") render();
+        } else if (view === "parla") { const b = $("#cMic"); if (b){ b.classList.add("rec"); b.textContent = "⏹ Stop"; } }
+      }
+    });
+  };
+}
+function chatPrompt(){
+  const sc = SCENARIOS.find(x => x.k === C.scen);
+  const transcript = C.msgs.map(m => (m.who === "me" ? "Conor: " + m.text : "You: " + m.text)).join("\n");
+  const last = [...C.msgs].reverse().find(m => m.who === "me");
+  return `You are helping Conor practise spoken Italian through a role-play.
+${ABOUT}
+Scenario: ${sc.setting}
+You play: ${sc.role}.
+Rules:
+- Reply ONLY in simple, natural, everyday Italian at A1 to A2 level: one or two short sentences, then usually one simple question to keep the conversation going.
+- Use common words and the present tense mostly. Be warm and natural, like a real person in this situation.
+- If Conor writes in English or seems stuck, answer helpfully and show him how to say it in Italian inside your reply.
+- Check Conor's latest message (if any). If it has mistakes or sounds unnatural, give the corrected, natural Italian version. If it is fine, leave "correction" empty.
+Respond with JSON only, no other text:
+{"reply":"your Italian reply","reply_en":"English translation of your reply","correction":"corrected Italian of Conor's latest message, or empty string","tip":"one short English explanation of the correction, or empty string"}
+
+Conversation so far:
+${transcript || "(none yet: open the conversation with a natural first line for this scenario)"}
+${last ? "\nConor's latest message: " + last.text : ""}`;
+}
+function parseJSON(t){
+  if (t && typeof t === "object") return t;
+  const s = String(t || ""), a = s.indexOf("{"), b = s.lastIndexOf("}");
+  if (a < 0 || b < a) return { reply: s.trim(), reply_en: "", correction: "", tip: "" };
+  try { return JSON.parse(s.slice(a, b + 1)); } catch(e){ return { reply: s.trim(), reply_en: "", correction: "", tip: "" }; }
+}
+async function aiTurn(){
+  if (!hasKey()){ toast(aiError({ code: "no_key" })); return; }
+  const last0 = C.msgs[C.msgs.length - 1];
+  C.busy = true; render();
+  try {
+    const res = await ai(chatPrompt(), 700);
+    const j = parseJSON(res && res.text);
+    const last = [...C.msgs].reverse().find(m => m.who === "me");
+    const keepAcc = t => String(t).toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+    if (last && j.correction && keepAcc(j.correction) !== keepAcc(last.text)){ last.fix = j.correction; last.tip = j.tip || ""; }
+    C.msgs.push({ who: "ai", text: String(j.reply || "").trim() || "…", en: j.reply_en || "" });
+    C.busy = false; render();
+    say(C.msgs[C.msgs.length - 1].text);
+  } catch(e){
+    C.busy = false;
+    if (last0 && last0.who === "me" && C.msgs[C.msgs.length - 1] === last0){ C.msgs.pop(); C.draft = last0.text; }
+    toast(aiError(e));
+    render();
+  }
+}
+function renderChat(body, mic){
+  if (!hasKey()){
+    body.innerHTML = `<div class="note">Chat uses AI, so it needs your Anthropic API key. Add it in <a href="#oggi">Oggi → Settings</a>. Repeat &amp; check works without it.</div>`;
+    return;
+  }
+  if (!C.scen){
+    body.innerHTML = `<p class="small muted" style="margin-top:0">Pick a situation. Silvia (or whoever you're talking to) keeps it simple, corrects your Italian and reads her replies aloud.</p>
+      <div class="chips">${SCENARIOS.filter(sc => sc.k !== "custom").map(sc => `<button class="chip" data-k="${sc.k}">${sc.t}</button>`).join("")}</div>
+      <h3>Or describe your own</h3>
+      <div class="row"><input type="text" id="ownScen" placeholder="E.g. ordering at a pizzeria in Noto" style="flex:1;min-width:180px"><button class="btn primary" id="ownGo">Start</button></div>`;
+    $$(".chip", body).forEach(b => b.onclick = () => { C.scen = b.dataset.k; C.msgs = []; C.draft = ""; aiTurn(); });
+    $("#ownGo").onclick = () => { const t = $("#ownScen").value.trim(); if (!t) return; let sc = SCENARIOS.find(x => x.k === "custom"); if (!sc){ sc = { k: "custom" }; SCENARIOS.push(sc); } Object.assign(sc, { t: "✏️ " + t, role: "the most natural Italian person for this situation (or Silvia, Conor's Italian wife, if it fits)", setting: t }); C.scen = "custom"; C.msgs = []; C.draft = ""; aiTurn(); };
+    return;
+  }
+  const sc = SCENARIOS.find(x => x.k === C.scen);
+  body.innerHTML = `
+    <div class="row"><b>${sc.t}</b><span class="spacer"></span>
+      <label class="chk small"><input type="checkbox" id="chEn" ${C.showEn?"checked":""}> Show English</label>
+      <button class="btn sm" id="chNew">New chat</button></div>
+    <div class="chat">${C.msgs.map((m, i) => m.who === "ai"
+      ? `<div class="msg"><div class="it">${esc(m.text)} <button class="btn ghost sm" data-say="${i}" title="Play">🔊</button></div>${C.showEn && m.en ? `<div class="tr">${esc(m.en)}</div>` : `<div class="tr"><a href="#parla" data-tr="${i}" class="small muted">translate</a></div>`}</div>`
+      : `<div class="msg me"><div class="it">${esc(m.text)}</div>${m.fix ? `<div class="fix">✏️ <b>${esc(m.fix)}</b> <button class="btn ghost sm" data-sayfix="${i}">🔊</button>${m.tip ? `<div class="muted">${esc(m.tip)}</div>` : ""}</div>` : ""}</div>`).join("")}
+      ${C.busy ? `<div class="msg"><span class="muted">…</span></div>` : ""}
+    </div>
+    <div class="row">
+      <input type="text" id="chIn" placeholder="Rispondi in italiano…" value="${esc(C.draft)}" style="flex:1;min-width:160px" autocomplete="off" ${C.busy?"disabled":""}>
+      ${mic ? `<button class="btn icon ${dictState==="listening"?"rec":""}" id="chMic" ${C.busy?"disabled":""}>🎙️</button>` : ""}
+      <button class="btn primary" id="chSend" ${C.busy?"disabled":""}>Send</button>
+    </div>`;
+  $("#chEn").onchange = e => { C.showEn = e.target.checked; render(); };
+  $("#chNew").onclick = () => { C.scen = null; C.msgs = []; render(); };
+  $$("[data-say]", body).forEach(b => b.onclick = () => say(C.msgs[+b.dataset.say].text));
+  $$("[data-sayfix]", body).forEach(b => b.onclick = () => say(C.msgs[+b.dataset.sayfix].fix));
+  $$("[data-tr]", body).forEach(a => a.onclick = e => { e.preventDefault(); const m = C.msgs[+a.dataset.tr]; a.parentElement.textContent = m.en || "(no translation)"; });
+  const inp = $("#chIn");
+  const send = () => { const t = (C.draft || "").trim(); if (!t || C.busy) return; C.msgs.push({ who: "me", text: t }); C.draft = ""; aiTurn(); };
+  inp.oninput = e => C.draft = e.target.value;
+  inp.onkeydown = e => { if (e.key === "Enter"){ e.preventDefault(); send(); } };
+  $("#chSend").onclick = send;
+  if ($("#chMic")) $("#chMic").onclick = () => micToggle({
+    partial: t => { const i = $("#chIn"); if (i) i.value = (C.draft + " " + t).trim(); },
+    final: t => { C.draft = (C.draft + " " + t).trim(); const i = $("#chIn"); if (i) i.value = C.draft; },
+    state: st => { const b = $("#chMic"); if (b) b.classList.toggle("rec", st === "listening"); }
+  });
+  const chat = $(".chat", body); if (chat) chat.lastElementChild && chat.lastElementChild.scrollIntoView({ block: "nearest" });
+}
+
+/* ---------- LIBRARY ---------- */
+let F = { q: "", sec: "all", hideEn: false, adding: false };
+function renderLibrary(v){
+  const q = normWord(F.q) ? F.q.toLowerCase() : "";
+  const qn = q.normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const match = p => !qn || (p.it + " " + p.en).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").includes(qn);
+  const ps = allPhrases().filter(p => (F.sec === "all" || (F.sec === "starred" ? S.stars[p.id] : p.sec === F.sec)) && match(p));
+  let html = "", lastSec = null, lastSub = null;
+  for (const p of ps){
+    if (p.sec !== lastSec){ html += `<div class="sechead">${esc(p.sec)}</div>`; lastSec = p.sec; lastSub = null; }
+    if (p.sub && p.sub !== lastSub){ html += `<div class="subhead">${esc(p.sub)}</div>`; lastSub = p.sub; }
+    const st = status(p.id), custom = p.sec === CUSTOM_SEC || !!p.topic;
+    html += `<div class="lib-item"><button class="btn ghost sm" data-say="${p.id}" title="Play">🔊</button>
+      <div class="t"><div class="i">${esc(p.it)}</div>${F.hideEn ? "" : `<div class="e">${esc(p.en)}</div>`}</div>
+      <span class="tag ${st.k}">${st.label}</span>
+      <button class="star ${S.stars[p.id]?"on":""}" data-star="${p.id}" title="Star">★</button>
+      ${custom ? `<button class="btn ghost sm" data-del="${p.id}" title="Delete">✕</button>` : ""}</div>`;
+  }
+  v.innerHTML = `
+  <h2>Frasi</h2>
+  <p class="sub">${uniquePhrases().length} phrases. Tap 🔊 to hear one, ★ to add it to your starred set.</p>
+  <div class="row">
+    <input type="text" id="fq" placeholder="Search Italian or English…" value="${esc(F.q)}" style="flex:1;min-width:180px">
+    <select id="fsec"><option value="all">All sections</option><option value="starred" ${F.sec==="starred"?"selected":""}>★ Starred</option>${sectionsAll().map(s => `<option value="${esc(s)}" ${F.sec===s?"selected":""}>${esc(s)}</option>`).join("")}</select>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <label class="chk"><input type="checkbox" id="fhide" ${F.hideEn?"checked":""}> Hide English</label>
+    <span class="spacer"></span>
+    <button class="btn sm" id="addToggle">＋ Add a phrase</button>
+  </div>
+  ${F.adding ? `<div class="card" style="margin-top:12px">
+    <div class="controls">
+      <label class="f">Italian<input type="text" id="addIt" placeholder="Es. Andiamo al cinema?"></label>
+      <label class="f">English<input type="text" id="addEn" placeholder="E.g. Shall we go to the cinema?"></label>
+    </div>
+    <label class="f" style="margin-top:10px">Or paste several, one per line as: Italian | English
+      <textarea id="addBulk" placeholder="Che bello! | How nice!"></textarea></label>
+    <div class="row end" style="margin-top:10px"><button class="btn sm" id="addCancel">Cancel</button><button class="btn sm primary" id="addSave">Add</button></div>
+    <p class="small muted" style="margin:8px 0 0">New phrases go into "${CUSTOM_SEC}" and join your reviews like the others.</p>
+  </div>` : ""}
+  <div id="libList" style="margin-top:6px">${html || `<p class="muted center">No matches.</p>`}</div>`;
+  const fq = $("#fq");
+  fq.oninput = e => { F.q = e.target.value; const pos = e.target.selectionStart; renderLibrary(v); const n = $("#fq"); n.focus(); n.setSelectionRange(pos, pos); };
+  $("#fsec").onchange = e => { F.sec = e.target.value; render(); };
+  $("#fhide").onchange = e => { F.hideEn = e.target.checked; render(); };
+  $("#addToggle").onclick = () => { F.adding = !F.adding; render(); };
+  if (F.adding){
+    $("#addCancel").onclick = () => { F.adding = false; render(); };
+    $("#addSave").onclick = () => {
+      const items = [];
+      const it = $("#addIt").value.trim(), en = $("#addEn").value.trim();
+      if (it) items.push([it, en]);
+      for (const line of $("#addBulk").value.split("\n")){ const l = line.trim(); if (!l) continue; const b = l.indexOf("|"); items.push([(b < 0 ? l : l.slice(0, b)).trim(), b < 0 ? "" : l.slice(b + 1).trim()]); }
+      const have = new Set(allPhrases().map(p => p.id)); let n = 0;
+      for (const [i, e] of items){ if (!i) continue; const id = hash(i); if (have.has(id)) continue; S.custom.push({ id, it: i, en: e }); have.add(id); n++; }
+      if (!n){ toast("Nothing new to add"); return; }
+      save(); F.adding = false; toast(n + (n === 1 ? " phrase added" : " phrases added")); render();
+    };
+  }
+  $$("[data-say]", v).forEach(b => b.onclick = () => { const p = byId(b.dataset.say); if (p) say(p.it); });
+  $$("[data-star]", v).forEach(b => b.onclick = () => { const id = b.dataset.star; if (S.stars[id]) delete S.stars[id]; else S.stars[id] = 1; save(); b.classList.toggle("on"); });
+  $$("[data-del]", v).forEach(b => b.onclick = () => { const id = b.dataset.del; S.custom = S.custom.filter(c => c.id !== id); for (const t of S.topics) t.phrases = t.phrases.filter(x => x.id !== id); S.topics = S.topics.filter(t => t.phrases.length); delete S.cards[id]; delete S.stars[id]; save(); render(); });
+}
+
+/* ---------- CREATE (AI topics) ---------- */
+let G = { topic: "", n: 20, busy: false, result: null, keep: {}, addTo: "" };
+const IDEAS = ["Food and cooking chat", "Ordering at a restaurant in Sicily", "Shopping at the market", "Talking about the weather", "Making plans with friends", "At the doctor's or pharmacy", "Travel: trains, hotels, directions", "Talking about family", "Phone calls and messages", "Compliments and feelings"];
+function genPrompt(){
+  const existing = allPhrases().map(p => p.it);
+  const target = G.addTo ? (S.topics.find(t => t.id === G.addTo) || {}).name : "";
+  return `Create ${G.n} useful, natural everyday Italian phrases for a beginner (A1 to A2) on this topic: "${G.topic || target}".
+${ABOUT}
+Guidelines:
+- Things he would genuinely say or hear in real life with Silvia, her family, or Italians. Mostly short (3 to 10 words), high frequency, present tense mostly.
+- Mix questions and answers, and include a few useful variations of the same idea.
+- Group them into 2 to 5 small subgroups in a sensible order.
+- Natural English translations (UK English), with a short note in brackets only where it really helps, e.g. (to Silvia) or (formal).
+- Do NOT repeat any of these phrases he already has: ${JSON.stringify(existing.slice(-400))}
+Return JSON only, no other text:
+{"title":"Italian title (English title)","groups":[{"name":"Italian name (English name)","phrases":[{"it":"...","en":"..."}]}]}`;
+}
+async function generate(){
+  if (!hasKey()){ toast(aiError({ code: "no_key" })); return; }
+  if (!G.topic.trim() && !G.addTo){ toast("Type a topic first"); return; }
+  G.busy = true; G.result = null; render();
+  try {
+    const r = await ai(genPrompt(), 4000);
+    const j = parseJSON(r.text);
+    if (!j || !Array.isArray(j.groups)) throw { code: "parse", message: "Unexpected answer, try again" };
+    const have = new Set(allPhrases().map(p => p.id));
+    j.groups.forEach(g => { g.phrases = (g.phrases || []).filter(x => x && x.it).map(x => ({ id: hash(String(x.it).trim()), it: String(x.it).trim(), en: String(x.en || "").trim() })).filter(x => !have.has(x.id)); });
+    j.groups = j.groups.filter(g => g.phrases.length);
+    G.result = j; G.keep = {};
+    j.groups.forEach(g => g.phrases.forEach(x => G.keep[x.id] = true));
+  } catch(e){ toast(e && e.code === "parse" ? e.message : aiError(e)); }
+  G.busy = false; render();
+}
+function saveGenerated(){
+  const j = G.result; if (!j) return;
+  const items = []; j.groups.forEach(g => g.phrases.forEach(x => { if (G.keep[x.id]) items.push({ ...x, sub: String(g.name || "") }); }));
+  if (!items.length){ toast("Tick at least one phrase"); return; }
+  let t = G.addTo && S.topics.find(x => x.id === G.addTo);
+  if (!t){ t = { id: "t" + Date.now().toString(36), name: String(j.title || G.topic).trim() || "Nuovo argomento", created: today(), phrases: [] }; S.topics.push(t); }
+  const have = new Set(allPhrases().map(p => p.id));
+  for (const it of items) if (!have.has(it.id)){ t.phrases.push(it); have.add(it.id); }
+  save();
+  toast(items.length + " phrases added to “" + t.name + "”");
+  G = { topic: "", n: G.n, busy: false, result: null, keep: {}, addTo: "" };
+  render();
+}
+function renderCreate(v){
+  const topics = S.topics || [];
+  const res = G.result;
+  const nKeep = res ? Object.values(G.keep).filter(Boolean).length : 0;
+  v.innerHTML = `
+  <h2>Crea ✨</h2>
+  <p class="sub">Type any topic and AI writes a set of everyday phrases for it. Keep the ones you like and they join your reviews and listening.</p>
+  ${!hasKey() ? `<div class="note" style="margin-bottom:12px">Add your Anthropic API key in <a href="#oggi">Oggi → Settings</a> to use this.</div>` : ""}
+  <div class="card">
+    <label class="f">Topic<input type="text" id="gTopic" placeholder="E.g. food conversations at dinner with Silvia's family" value="${esc(G.topic)}" ${G.addTo ? "disabled" : ""}></label>
+    ${G.addTo ? `<p class="small" style="margin:8px 0 0">Adding more to <b>${esc((topics.find(t => t.id === G.addTo) || {}).name || "")}</b> · <a href="#crea" id="gCancelMore">cancel</a></p>` : `<div class="chips" style="margin-top:10px">${IDEAS.map(x => `<button class="chip" data-idea="${esc(x)}">${esc(x)}</button>`).join("")}</div>`}
+    <div class="row" style="margin-top:12px">
+      <label class="f" style="flex-direction:row;align-items:center;gap:8px">How many
+        <select id="gN">${[10,15,20,30,40].map(n => `<option ${G.n===n?"selected":""}>${n}</option>`).join("")}</select></label>
+      <span class="spacer"></span>
+      <button class="btn primary" id="gGo" ${G.busy || !hasKey() ? "disabled" : ""}>${G.busy ? "Writing phrases…" : "✨ Generate"}</button>
+    </div>
+  </div>
+  ${res ? `<div class="card" style="margin-top:12px">
+    <div class="row"><div class="sechead" style="margin:0">${esc(res.title || G.topic)}</div><span class="spacer"></span><button class="btn sm" id="gAll">${nKeep ? "Untick all" : "Tick all"}</button></div>
+    ${res.groups.map(g => `<div class="subhead">${esc(g.name || "")}</div>` + g.phrases.map(x => `<label class="gen-item"><input type="checkbox" data-k="${x.id}" ${G.keep[x.id] ? "checked" : ""}><div style="flex:1"><div style="font-weight:500">${esc(x.it)}</div><div class="small muted">${esc(x.en)}</div></div><button class="btn ghost sm" data-say="${esc(x.it)}" type="button">🔊</button></label>`).join("")).join("")}
+    <div class="row" style="margin-top:14px"><button class="btn" id="gRedo">↻ Try again</button><span class="spacer"></span><button class="btn primary" id="gSave">Add ${nKeep} phrase${nKeep === 1 ? "" : "s"}</button></div>
+  </div>` : ""}
+  <h3>Your topics</h3>
+  <div class="card" style="padding:4px 16px">
+    ${topics.length ? topics.map(t => { const k = t.phrases.filter(p => S.cards[p.id] && S.cards[p.id].s === "review").length; return `<div class="topic"><div style="flex:1;min-width:0"><div style="font-weight:600">${esc(t.name)}</div><div class="small muted">${t.phrases.length} phrases · ${k} learned</div></div>
+      <button class="btn sm" data-listen="${t.id}">🎧</button><button class="btn sm" data-more="${t.id}">＋ More</button><button class="btn sm ghost" data-deltopic="${t.id}" title="Delete">✕</button></div>`; }).join("")
+      : `<p class="muted small">None yet. Topics you create appear here and as sections everywhere else in the app.</p>`}
+  </div>`;
+  const ti = $("#gTopic"); ti.oninput = e => G.topic = e.target.value; ti.onkeydown = e => { if (e.key === "Enter"){ e.preventDefault(); generate(); } };
+  $$("[data-idea]", v).forEach(b => b.onclick = () => { G.topic = b.dataset.idea; render(); });
+  if ($("#gCancelMore")) $("#gCancelMore").onclick = e => { e.preventDefault(); G.addTo = ""; render(); };
+  $("#gN").onchange = e => G.n = +e.target.value;
+  $("#gGo").onclick = generate;
+  if (res){
+    $$("[data-k]", v).forEach(c => c.onchange = () => { G.keep[c.dataset.k] = c.checked; const n = Object.values(G.keep).filter(Boolean).length; $("#gSave").textContent = "Add " + n + " phrase" + (n === 1 ? "" : "s"); });
+    $$("[data-say]", v).forEach(b => b.onclick = e => { e.preventDefault(); say(b.dataset.say); });
+    $("#gAll").onclick = () => { const on = !nKeep; Object.keys(G.keep).forEach(k => G.keep[k] = on); render(); };
+    $("#gRedo").onclick = generate;
+    $("#gSave").onclick = saveGenerated;
+  }
+  $$("[data-listen]", v).forEach(b => b.onclick = () => { const t = S.topics.find(x => x.id === b.dataset.listen); if (!t) return; S.settings.lSet = t.name; L.key = ""; L.i = 0; save(); go("ascolto"); });
+  $$("[data-more]", v).forEach(b => b.onclick = () => { G.addTo = b.dataset.more; G.result = null; render(); window.scrollTo(0, 0); });
+  $$("[data-deltopic]", v).forEach(b => b.onclick = () => {
+    const t = S.topics.find(x => x.id === b.dataset.deltopic); if (!t) return;
+    if (b.dataset.armed){ for (const p of t.phrases){ delete S.cards[p.id]; delete S.stars[p.id]; } S.topics = S.topics.filter(x => x !== t); save(); toast("Topic deleted"); render(); }
+    else { b.dataset.armed = "1"; b.textContent = "Delete?"; b.classList.add("rec"); setTimeout(() => { if (b.isConnected){ delete b.dataset.armed; b.textContent = "✕"; b.classList.remove("rec"); } }, 3000); }
+  });
+}
+
+/* ---------- boot ---------- */
+applyState(loadLocal());
+pickVoice();
+setSync("ok");
+{ const r = makeRecognizer(); if (r) wireDictation(r); }
+route();
+try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch(e){}
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
